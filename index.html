@@ -1722,7 +1722,7 @@
   // ---------- Buscar en las 5 tiendas a la vez (agrupado por código de barras) ----------
   let sGroups = [], sReq = 0;
   // Modelo del producto (HDR370F50B, SM-A165M): sirve para reconocer el mismo producto en tiendas que no publican el código de barras
-  const MEDIDA_M = /^\d+(?:[.,]\d+)?(GB|TB|MB|MAH|W|HZ|LT|L|KG|CM|MM|MP|FPS|V|BTU|FRIGORIAS|PULG|P)$/;
+  const MEDIDA_M = /^\d+(?:[.,]\d+)?(GB|TB|MB|MAH|W|KW|HZ|LTS?|LITROS?|L|ML|CC|KG|KGS|GR?|CM|MM|MTS?|M|MP|FPS|V|BTU|FRIGORIAS|PULG|PULGADAS|P|RPM|PIEZAS|PZAS|PCS|AH|WH|ANOS|MESES|LBS)$/;
   // Productos Apple: familia + variante + capacidad, sin el color (igual que en el servidor)
   function claveApple(nombre){
     const n = String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();

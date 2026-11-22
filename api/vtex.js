@@ -35,7 +35,7 @@ function claveApple(nombre, sinCapacidad) {
 }
 
 // Modelo del producto: palabras con letras y números (HDR370F50B, SM-A165M, 55UT8000), sin medidas ni capacidades
-const MEDIDA = /^\d+(?:[.,]\d+)?(GB|TB|MB|MAH|W|HZ|LT|L|KG|CM|MM|MP|FPS|V|BTU|FRIGORIAS|PULG|P)$/;
+const MEDIDA = /^\d+(?:[.,]\d+)?(GB|TB|MB|MAH|W|KW|HZ|LTS?|LITROS?|L|ML|CC|KG|KGS|GR?|CM|MM|MTS?|M|MP|FPS|V|BTU|FRIGORIAS|PULG|PULGADAS|P|RPM|PIEZAS|PZAS|PCS|AH|WH|ANOS|MESES|LBS)$/;
 // Sets de LEGO: el número de set (31147) identifica el producto
 function claveLego(nombre) {
   const n = String(nombre || '').toUpperCase();
