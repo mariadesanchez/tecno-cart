@@ -7,7 +7,6 @@ const TIENDAS = {
   naldo:    { nombre: 'Naldo',    host: 'https://www.naldo.com.ar' },
   cetrogar: { nombre: 'Cetrogar', host: 'https://www.cetrogar.com.ar' },
   oncity:   { nombre: 'On City',  host: 'https://www.oncity.com' },
-  fravega:  { nombre: 'Frávega',  host: 'https://www.fravega.com', web: true },   // se lee del buscador de su web (lib/fravega.js)
   samsung:  { nombre: 'Samsung',  host: 'https://shop.samsung.com/ar' },
   motorola: { nombre: 'Motorola', host: 'https://www.motorola.com.ar' },
   rodo:     { nombre: 'Rodó',     host: 'https://www.rodo.com.ar', magento: true },
