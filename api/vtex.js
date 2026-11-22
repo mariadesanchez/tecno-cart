@@ -205,6 +205,7 @@ function mapear(products, ean) {
       link: linkTienda(p, item),
       modelo: rel.modeloLimpio(p.productReference),
       medidas: rel.medidas(rel.textoMedidas(p)),
+      categorias: (p.categories || []).join(' '),   // para saber si es lo buscado aunque no lo diga el nombre ("Horno Longvie HE-6900G" está en Hornos eléctricos)
       sku: String(item.itemId || ''),
       seller: String((seller && seller.sellerId) || '1'),
     });
@@ -269,7 +270,12 @@ async function handler(req, res) {
     // Con medida, también se busca con la medida puesta (la tienda devuelve primero los más grandes)
     if (medQ.length && !tienda.magento && !tienda.prestashop && !tienda.odoo && !tienda.web) {
       try {
-        const extra = mapear(await buscar(tienda.host, `ft=${encodeURIComponent(qOriginal)}&_from=0&_to=49`), ean);
+        // más resultados: la segunda página sin la medida y la búsqueda con la medida puesta (los tamaños chicos suelen quedar más abajo)
+        const [pag2, conMedida] = await Promise.all([
+          buscar(tienda.host, `ft=${encodeURIComponent(q)}&_from=50&_to=99`).catch(() => []),
+          buscar(tienda.host, `ft=${encodeURIComponent(qOriginal)}&_from=0&_to=49`).catch(() => []),
+        ]);
+        const extra = mapear([].concat(pag2 || [], conMedida || []), ean);
         const ya = new Set(productos.map(p => p.link)); extra.forEach(p => { if (!ya.has(p.link)) productos.push(p); });
       } catch (_) { /* con lo que hay */ }
     }
@@ -278,7 +284,7 @@ async function handler(req, res) {
     // Búsqueda por nombre: se sacan los resultados que no tienen que ver (iMacs al buscar "horno eléctrico")
     if (!ean && !buscaModelo && !productos.some(p => p.exacto)) productos = rel.relevantes(productos, q);
     if (medQ.length) productos = rel.conMedidas(productos, medQ).slice(0, limitePedido);
-    productos.forEach(p => { delete p.medidas; });
+    productos.forEach(p => { delete p.medidas; delete p.categorias; });
     productos.sort((a, b) => (Number(b.exacto) - Number(a.exacto)) || (Number(a.sin_stock) - Number(b.sin_stock)));
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
     res.statusCode = 200;
