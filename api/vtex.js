@@ -171,7 +171,7 @@ function mapear(products, ean) {
     out.push({
       nombre: p.productName || item.nameComplete || '',
       marca: p.brand || '',
-      ean: item.ean || '',
+      ean: item.ean || (/^\d{12,14}$/.test(String(p.productReference || '').trim()) ? String(p.productReference).trim() : ''),   // Frávega pone el código de barras en la referencia
       precio,
       precio_lista: co.ListPrice && co.ListPrice > precio && co.ListPrice < precio * 4 ? co.ListPrice : null,   // x10 = error de carga
       precio_promo: mejor && !sinStock ? Math.round(mejor.precio * 100) / 100 : null,

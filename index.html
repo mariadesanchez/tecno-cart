@@ -1785,11 +1785,24 @@
       renderCoto();
     }));
     if (my !== sReq) return;
+    fusionarGrupos();
     completarGrupos(my);
     const n = sGroups.filter(g => mejorDe(g)).length;
     $('cotoInfo').textContent = n ? n + (n === 1 ? ' producto' : ' productos') + '. Te mostramos el precio más bajo; tocá “Comparar” para verlo en cada tienda.'
       : 'No encontré productos con ese nombre. Probá con otras palabras o con el código de barras.';
     renderCoto();
+  }
+  // Une los grupos que resultaron ser el mismo producto a través de una tercera tienda
+  // (Kinderland y Frávega por el número de set de LEGO; Frávega y Cebra por el código de barras)
+  function fusionarGrupos(){
+    for (let i = 0; i < sGroups.length; i++) for (let j = sGroups.length - 1; j > i; j--) {
+      const a = sGroups[i], b = sGroups[j];
+      if (Object.keys(b.por).some(k => a.por[k])) continue;
+      if ((a.ean && a.ean === b.ean) || ([...b.mods].some(m => a.mods.has(m)) && compatibles(a, b))) {
+        b.mods.forEach(m => a.mods.add(m)); if (!a.ean) a.ean = b.ean; if (!a.imagen) a.imagen = b.imagen;
+        Object.assign(a.por, b.por); a.rank = Math.min(a.rank, b.rank); sGroups.splice(j, 1);
+      }
+    }
   }
   // Los primeros resultados se buscan también en las tiendas donde no aparecieron (por código o por modelo), para mostrar todos los precios
   async function completarGrupos(my){
