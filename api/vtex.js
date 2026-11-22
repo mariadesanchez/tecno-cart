@@ -187,6 +187,7 @@ function mapear(products, ean) {
       rubro: rubroVtex(p),
       link: p.link || '',
       modelo: rel.modeloLimpio(p.productReference),
+      medidas: rel.medidas(rel.textoMedidas(p)),
       sku: String(item.itemId || ''),
       seller: String((seller && seller.sellerId) || '1'),
     });
@@ -212,7 +213,11 @@ async function handler(req, res) {
   const ean = /^\d{8,14}$/.test(codigo) ? codigo : '';
   if (!ean && codigo && modelos(codigo).size && !q.toUpperCase().includes(codigo.toUpperCase())) q = (q + ' ' + codigo).trim().slice(0, 100);
   const buscaModelo = !ean && codigo ? codigo : '';
-  const limite = Math.min(Math.max(parseInt(query.limite, 10) || 48, 1), 50);
+  // Medidas pedidas ("horno eléctrico 20 L"): se busca sin ellas y después se dejan solo los que las tienen
+  const medQ = !ean && !buscaModelo ? rel.medidas(q) : [];
+  if (medQ.length) q = rel.sinMedidas(q) || q;
+  const limitePedido = Math.min(Math.max(parseInt(query.limite, 10) || 48, 1), 50);
+  const limite = medQ.length ? 50 : limitePedido;
   if (!q && !ean) {
     res.statusCode = 400;
     return res.end(JSON.stringify({ ok: false, error: 'Falta qué buscar' }));
@@ -242,6 +247,8 @@ async function handler(req, res) {
     if (buscadoPor === 'nombre' && productos.some(p => p.por_modelo)) buscadoPor = 'modelo';
     // Búsqueda por nombre: se sacan los resultados que no tienen que ver (iMacs al buscar "horno eléctrico")
     if (!ean && !buscaModelo && !productos.some(p => p.exacto)) productos = rel.relevantes(productos, q);
+    if (medQ.length) productos = rel.conMedidas(productos, medQ).slice(0, limitePedido);
+    productos.forEach(p => { delete p.medidas; });
     productos.sort((a, b) => (Number(b.exacto) - Number(a.exacto)) || (Number(a.sin_stock) - Number(b.sin_stock)));
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
     res.statusCode = 200;

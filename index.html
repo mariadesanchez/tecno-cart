@@ -177,7 +177,6 @@
   .cmp-ahorro{font-size:14px;margin:4px 0 2px;line-height:1.35}
   .cmp-ahorro b{color:var(--price-hot)}
   .worstTag{display:inline-block;background:color-mix(in srgb, var(--danger) 14%, var(--card));color:var(--danger);font-family:"Figtree",sans-serif;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
-  .scard .sstores span.worst{color:var(--danger)}
   .scard .sworst{font-size:13px;color:var(--muted);margin-top:2px}
   .scard .sworst b{color:var(--danger)}
   .scard img,.scard .sn{cursor:pointer}
@@ -319,9 +318,13 @@
   .scard .sb{color:var(--muted);font-size:13px}
   .scard .sbest{margin-top:4px;font-size:15px}
   .scard .sbest b{font-size:19px;color:var(--price-hot)}
-  .scard .sstores{display:grid;grid-template-columns:1fr auto;gap:1px 12px;margin-top:8px;font-size:13px;color:var(--muted)}
-  .scard .sstores span:nth-child(even){text-align:right;font-variant-numeric:tabular-nums}
-  .scard .sstores span.best{color:var(--ink);font-weight:800}
+  .scard .sstores{display:flex;flex-direction:column;gap:1px;margin-top:8px;font-size:13px;color:var(--muted)}
+  .scard .srow{display:grid;grid-template-columns:1fr auto;gap:12px;padding:5px 8px;margin:0 -8px;border-radius:8px;color:inherit;text-decoration:none}
+  .scard a.srow:hover{background:rgba(0,0,0,.05)}
+  .scard a.srow:active{background:rgba(0,0,0,.09)}
+  .scard .srow span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  .scard .srow.best{color:var(--ink);font-weight:800}
+  .scard .srow.worst{color:var(--danger)}
   .scard .sacts{grid-column:1/-1;display:flex;gap:8px}
   /* ---------- Mundo Apple ---------- */
   .ap-ico{flex:none;width:40px;height:40px;border-radius:12px;background:linear-gradient(160deg,#FFFFFF 0%,#FFE9E2 100%);box-shadow:inset 0 2px 0 #fff,0 3px 0 #C9573C;position:relative}
@@ -1751,6 +1754,8 @@
     const med = (s, re) => { const m = re.exec(N(s)); return m ? Number(m[1]) : null; };
     const MEDIDAS = [/(\d{2,3})\s*(?:"|''|\u201D|PULG)/, /\b(\d{2,4})\s*(?:L|LT|LTS|LITROS?)\b/];
     for (const re of MEDIDAS) { const a = med(g.nombre, re), b = med(pr.nombre, re); if (a && b && a !== b) return false; }
+    const reac = s => /REACONDICIONAD|REFURBISH|\bUSAD[OA]\b|SEMINUEV|OPEN BOX/.test(N(s));
+    if (reac(g.nombre) !== reac(pr.nombre)) return false;
     const ma = N(g.marca).trim(), mb = N(pr.marca).trim();
     if (ma && mb && !ma.includes(mb) && !mb.includes(ma)) return false;
     return true;
@@ -1852,7 +1857,7 @@
     const el = document.createElement('div'); el.className = 'scard';
     el.innerHTML = `<img alt="" loading="lazy"><div style="min-width:0"><div class="sn"></div><div class="sb"></div>
       <div class="sbest"><b>${fmt(b.v)}</b> en <span class="st"></span></div><div class="sstores"></div></div>
-      <div class="sacts"><button type="button" class="btn ${inList ? 'btn-ghost added' : 'btn-primary'}" data-a="add"></button><button type="button" class="btn btn-ghost" data-a="cmp">Comparar</button></div>`;
+      <div class="sacts"><button type="button" class="btn ${inList ? 'btn-ghost added' : 'btn-primary'}" data-a="add"></button></div>`;
     const img = el.querySelector('img'); if (g.imagen) img.src = g.imagen; else img.style.visibility = 'hidden';
     img.onerror = () => { img.style.visibility = 'hidden'; };
     el.querySelector('.sn').textContent = g.nombre;
@@ -1863,7 +1868,14 @@
     const xs = Object.entries(g.por).filter(([, pr]) => !pr.sin_stock && (pr.precio_promo || pr.precio)).map(([k, pr]) => ({ k, v: pr.precio_promo || pr.precio }))
       .sort((x, y) => x.v - y.v);
     const ult = xs.length > 1 && xs[xs.length - 1].v > xs[0].v ? xs.length - 1 : -1;
-    xs.forEach((x, i) => { [SUPERS[x.k], fmt(x.v)].forEach(txt => { const s = document.createElement('span'); if (!i) s.className = 'best'; else if (i === ult) s.className = 'worst'; s.textContent = txt; ss.appendChild(s); }); });
+    // Cada tienda es un link al producto en esa tienda
+    xs.forEach((x, i) => {
+      const pr = g.por[x.k], a = document.createElement(pr.link ? 'a' : 'div');
+      a.className = 'srow' + (!i ? ' best' : i === ult ? ' worst' : '');
+      if (pr.link) { a.href = pr.link; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Ver en ' + SUPERS[x.k]; }
+      [SUPERS[x.k] + (pr.link ? ' ›' : ''), fmt(x.v)].forEach(txt => { const s = document.createElement('span'); s.textContent = txt; a.appendChild(s); });
+      ss.appendChild(a);
+    });
     if (ult > 0) {
       const w = document.createElement('div'); w.className = 'sworst';
       w.innerHTML = 'Más caro en <span></span>: <b>' + fmt(xs[ult].v) + '</b> (pagás ' + fmt(xs[ult].v - xs[0].v) + ' más)';
@@ -1872,10 +1884,8 @@
     }
     const ab = el.querySelector('[data-a=add]'); ab.textContent = inList ? '✓ En ' + l.name : '+ A mi lista';
     ab.addEventListener('click', () => { addToMyList(Object.assign({}, b.p, { ean: codigoG || b.p.ean }), b.k); renderCoto(); });
-    const cb = el.querySelector('[data-a=cmp]');
-    const comparar = () => { handleCode(codigoG || g.nombre, g.nombre); setTimeout(() => $('cotoCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); };
-    if (cb) cb.addEventListener('click', comparar);
-    [img, el.querySelector('.sn')].forEach(x => x.addEventListener('click', comparar));
+    // La foto y el nombre llevan al producto en la tienda más barata
+    if (b.p.link) [img, el.querySelector('.sn')].forEach(x => x.addEventListener('click', () => window.open(b.p.link, '_blank', 'noopener')));
     return el;
   }
   // ---------- Barra de rango de precios: acota los resultados (escala logarítmica entre el más barato y el más caro) ----------
