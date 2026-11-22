@@ -751,6 +751,19 @@
   @keyframes ofspin{to{transform:rotate(360deg)}}
   .of-src{font-size:12px;color:var(--muted);text-align:center;margin-top:18px}
   .of-src a,.hint a{color:var(--muted);font-weight:700}
+  /* Pasar productos a otra lista */
+  .lst-items li, #bItems li{position:relative}
+  .mvbtn{font-size:17px;font-weight:800}
+  .mv-menu{position:absolute;right:6px;top:calc(100% - 6px);z-index:25;background:#fff;color:var(--ink);border-radius:16px;box-shadow:0 18px 40px -12px rgba(0,0,0,.4),0 0 0 1px rgba(0,0,0,.06);padding:10px;width:min(320px,86vw)}
+  .mv-h{font-size:13px;font-weight:700;color:var(--muted);margin:2px 4px 8px}
+  .mv-row{display:flex;align-items:center;gap:6px;padding:6px 4px;border-top:1px solid #F2ECF5}
+  .mv-row span{flex:1;min-width:0;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mv-row small{color:var(--muted);font-weight:500}
+  .mv-b{appearance:none;border:0;border-radius:10px;padding:7px 10px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;background:#7B2FF7;color:#fff;flex:none}
+  .mv-b.mv-c{background:#F1E9FF;color:#7B2FF7}
+  .mv-b:hover{filter:brightness(1.08)}
+  .mv-new{display:flex;gap:6px;padding:8px 4px 2px;border-top:1px solid #F2ECF5}
+  .mv-new input{flex:1;min-width:0;border:1.5px solid #E6DDF0;border-radius:10px;padding:7px 9px;font:inherit;font-size:13px}
 </style>
 </head>
 <body class="gated">
@@ -3264,7 +3277,7 @@
     const showHeads = true;
     keys.forEach(k => {
       if (showHeads) { const h = document.createElement('li'); h.className = 'rubro-h'; h.textContent = k; const c = document.createElement('small'); c.textContent = '(' + groups[k].length + ')'; h.appendChild(c); ul.appendChild(h); }
-      groups[k].sort(byName).forEach(it => renderListItem(l, it, ul));
+      groups[k].sort((a, b) => (enOfertaItem(b) - enOfertaItem(a)) || byName(a, b)).forEach(it => renderListItem(l, it, ul));
     });
     $('bRun').disabled = !l.items.length; updateShare(); renderUpdBar(l); if (window.__gsReady) renderGs();
     renderListSummary(l);
@@ -3328,6 +3341,43 @@
     });
   }
   const fotoMini = (src, cls) => { const im = document.createElement('img'); im.className = cls; im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer'; if (src) im.src = src; else im.classList.add('vacia'); im.onerror = () => { im.removeAttribute('src'); im.classList.add('vacia'); }; return im; };
+  // ---------- Pasar productos de una lista a otra ----------
+  function pasarALista(desde, it, hacia, mover){
+    const igual = x => (it.ean && x.ean === it.ean) || (!it.ean && x.name === it.name && x.sup === it.sup);
+    const ya = hacia.items.find(igual);
+    if (ya) ya.qty = Math.min(999, (ya.qty || 1) + (it.qty || 1));
+    else hacia.items.push(Object.assign({}, it, { id: uid() }));
+    if (mover) desde.items = desde.items.filter(x => x !== it);
+    saveLists(); renderBuilderItems(); renderBuilderResults(); renderLists();
+    toast((mover ? 'Lo pasaste a ' : 'Lo copiaste en ') + hacia.name + (ya ? ' (sumado al que ya estaba)' : ''));
+  }
+  function cerrarMenuMover(){ document.querySelectorAll('.mv-menu').forEach(m => m.remove()); }
+  document.addEventListener('click', e => { if (!e.target.closest('.mv-menu, .mvbtn')) cerrarMenuMover(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarMenuMover(); });
+  function menuMover(l, it, li){
+    const abierto = li.querySelector('.mv-menu'); cerrarMenuMover(); if (abierto) return;
+    const m = document.createElement('div'); m.className = 'mv-menu'; m.setAttribute('role', 'menu');
+    const h = document.createElement('div'); h.className = 'mv-h'; h.textContent = 'Pasar “' + it.name.slice(0, 40) + (it.name.length > 40 ? '…' : '') + '” a:'; m.appendChild(h);
+    const boton = (txt, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = txt; b.addEventListener('click', e => { e.stopPropagation(); fn(); }); return b; };
+    lists.filter(x => x !== l).forEach(x => {
+      const r = document.createElement('div'); r.className = 'mv-row';
+      const n = document.createElement('span'); n.textContent = x.name; const c = document.createElement('small'); c.textContent = ' (' + x.items.length + ')'; n.appendChild(c);
+      r.append(n, boton('Mover', 'mv-b', () => pasarALista(l, it, x, true)), boton('Copiar', 'mv-b mv-c', () => pasarALista(l, it, x, false)));
+      m.appendChild(r);
+    });
+    // O a una lista nueva
+    const f = document.createElement('div'); f.className = 'mv-new';
+    const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 40; inp.placeholder = lists.length > 1 ? 'O a una lista nueva…' : 'Nombre de la lista nueva';
+    const crear = () => { const nombre = inp.value.trim(); if (!nombre) { inp.focus(); return; } const nl = { id: uid(), name: nombre, items: [] }; lists.push(nl); pasarALista(l, it, nl, true); };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); crear(); } });
+    inp.addEventListener('click', e => e.stopPropagation());
+    f.append(inp, boton('Crear y mover', 'mv-b', crear));
+    m.appendChild(f);
+    li.appendChild(m);
+    (m.querySelector('.mv-b') || inp).focus();
+  }
+  // En cada tienda, primero los productos en oferta
+  const enOfertaItem = it => !!(it.promoPrice && itemUnit(it) !== it.price);
   function renderListItem(l, it, ul){
       const li = document.createElement('li');
       li.innerHTML = `<span></span><div class="mini-step"><button type="button" data-d="-1" aria-label="Menos">−</button><b>${fmtQ(it.qty)}</b><button type="button" data-d="1" aria-label="Más">+</button></div><button type="button" class="iconbtn" aria-label="Quitar">✕</button>`;
@@ -3355,6 +3405,11 @@
       const cl = document.createElement('div'); cl.className = 'code'; codeLine(cl, it, () => { saveLists(); renderBuilderItems(); renderLists(); }); sp.appendChild(cl);
       li.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => { it.qty = Math.max(1, it.qty + Number(b.dataset.d)); saveLists(); renderBuilderItems(); renderLists(); }));
       li.querySelector('.iconbtn').addEventListener('click', () => { l.items = l.items.filter(x => x !== it); saveLists(); renderBuilderItems(); renderBuilderResults(); renderLists(); });
+      // Pasar el producto a otra lista (moverlo o copiarlo)
+      const mv = document.createElement('button'); mv.type = 'button'; mv.className = 'iconbtn mvbtn'; mv.textContent = '⇄';
+      mv.title = 'Pasar a otra lista'; mv.setAttribute('aria-label', 'Pasar a otra lista'); mv.setAttribute('aria-haspopup', 'menu');
+      li.insertBefore(mv, li.querySelector('.iconbtn:not(.mvbtn)'));
+      mv.addEventListener('click', e => { e.stopPropagation(); menuMover(l, it, li); });
       ul.appendChild(li);
   }
   function renderListSummary(l){
