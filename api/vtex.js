@@ -7,6 +7,7 @@ const TIENDAS = {
   naldo:    { nombre: 'Naldo',    host: 'https://www.naldo.com.ar' },
   cetrogar: { nombre: 'Cetrogar', host: 'https://www.cetrogar.com.ar' },
   oncity:   { nombre: 'On City',  host: 'https://www.oncity.com' },
+  fravega:  { nombre: 'Frávega',  host: 'https://www.fravega.com' },
   samsung:  { nombre: 'Samsung',  host: 'https://shop.samsung.com/ar' },
   motorola: { nombre: 'Motorola', host: 'https://www.motorola.com.ar' },
   rodo:     { nombre: 'Rodó',     host: 'https://www.rodo.com.ar', magento: true },
@@ -34,9 +35,15 @@ function claveApple(nombre, sinCapacidad) {
 
 // Modelo del producto: palabras con letras y números (HDR370F50B, SM-A165M, 55UT8000), sin medidas ni capacidades
 const MEDIDA = /^\d+(?:[.,]\d+)?(GB|TB|MB|MAH|W|HZ|LT|L|KG|CM|MM|MP|FPS|V|BTU|FRIGORIAS|PULG|P)$/;
+// Sets de LEGO: el número de set (31147) identifica el producto
+function claveLego(nombre) {
+  const n = String(nombre || '').toUpperCase();
+  const m = /\bLEGO\b/.test(n) && /\b(\d{4,6})\b/.exec(n.replace(/\b\d+\s*(PIEZAS|PZS|PCS|AÑOS|ANOS)\b/g, ''));
+  return m ? 'LEGO ' + m[1] : '';
+}
 function modelos(nombre) {
-  const a = claveApple(nombre);
-  return new Set((a ? [a] : []).concat([...modelosSin(nombre)]));
+  const a = claveApple(nombre), l = claveLego(nombre);
+  return new Set((a ? [a] : []).concat(l ? [l] : [], [...modelosSin(nombre)]));
 }
 function modelosSin(nombre) {
   return new Set(String(nombre || '').toUpperCase().replace(/[^A-Z0-9\-\/ ]/g, ' ').split(/[\s\/]+/)
@@ -47,7 +54,7 @@ function modelosSin(nombre) {
 function marcarPorModelo(productos, q) {
   const buscado = modelos(q);
   if (!buscado.size || productos.some(p => p.exacto)) return productos;
-  const p = productos.find(x => [...modelos(x.nombre)].some(m => buscado.has(m) || buscado.has(m.replace(/-/g, ''))));
+  const p = productos.find(x => [...modelos(x.nombre + ' ' + (x.modelo || ''))].some(m => buscado.has(m) || buscado.has(m.replace(/-/g, ''))));
   if (p) { p.exacto = true; p.por_modelo = true; return productos; }
   // Tiendas que publican el iPhone sin la capacidad (MacStation: "iPhone 17", con el precio de la versión más chica)
   const base = claveApple(q, true).replace(/ \d+GB$/, '');
@@ -178,6 +185,7 @@ function mapear(products, ean) {
       sin_stock: sinStock,
       rubro: rubroVtex(p),
       link: p.link || '',
+      modelo: String(p.productReference || ''),
       sku: String(item.itemId || ''),
       seller: String((seller && seller.sellerId) || '1'),
     });

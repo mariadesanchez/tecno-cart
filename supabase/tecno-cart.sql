@@ -152,3 +152,9 @@ alter table public.tecno_perfiles drop constraint if exists tecno_supers_validos
 alter table public.tecno_perfiles add constraint tecno_supers_validos check (cardinality(supers) > 0 and supers <@ array['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation']);
 alter table public.tecno_perfiles alter column supers set default array['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation'];
 update public.tecno_perfiles set supers = supers || array['ipoint', 'macstation'] where not (supers @> array['ipoint']);
+
+-- Frávega: se suma a las tiendas que se pueden elegir para el mail
+alter table public.tecno_perfiles drop constraint if exists tecno_supers_validos;
+alter table public.tecno_perfiles add constraint tecno_supers_validos check (cardinality(supers) > 0 and supers <@ array['naldo', 'cetrogar', 'oncity', 'fravega', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation']);
+alter table public.tecno_perfiles alter column supers set default array['naldo', 'cetrogar', 'oncity', 'fravega', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation'];
+update public.tecno_perfiles set supers = supers || array['fravega'] where not (supers @> array['fravega']);
