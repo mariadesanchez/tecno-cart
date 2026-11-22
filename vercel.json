@@ -4,5 +4,11 @@
     "api/vtex-ofertas.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/apple",
+      "destination": "/index.html"
+    }
+  ]
 }

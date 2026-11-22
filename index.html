@@ -949,7 +949,6 @@
       <button type="button" role="tab" data-super="macstation">MacStation</button>
     </div>
     <div class="hint" style="margin:-4px 0 8px" hidden>Buscando en <b id="cotoSuc"></b></div>
-    <button type="button" class="ap-entra" id="apEntra" aria-pressed="false"><span class="ap-ico"></span><span><b>Mundo Apple</b><small>iPhone, iPad, Mac, AirPods y Watch en las 9 tiendas</small></span><span class="ap-fl">›</span></button>
     <div class="ap-box" id="apBox" hidden>
       <div class="ap-head"><span class="ap-ico"></span><div><b>Mundo Apple</b><small>El mismo equipo en todas las tiendas: comprá donde sale menos</small></div><button type="button" class="ap-x" id="apSalir" aria-label="Salir de Mundo Apple">✕</button></div>
       <div class="ap-chips" id="apChips">
@@ -1199,6 +1198,26 @@
 
 <script src="/vendor/zxing-reader.js"></script>
 <script>
+  // ---------- Mundo Apple es una app aparte (tecno-cart.vercel.app/apple): mismo motor, su propio nombre, logo y colores ----------
+  const APP_APPLE = /^\/apple\/?$/.test(location.pathname) || new URLSearchParams(location.search).get('apple') === '1';
+  if (APP_APPLE) {
+    document.title = 'Mundo Apple';
+    document.body.classList.add('app-apple');
+    const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = '#E5432A';
+    const lg = document.querySelector('#hero .logo');
+    if (lg) {
+      lg.setAttribute('aria-label', 'Mundo Apple');
+      const st = lg.querySelectorAll('#celeste stop'); ['#FFE1D6', '#FF8A66', '#E5432A'].forEach((c, i) => st[i] && st[i].setAttribute('stop-color', c));
+      const tx = lg.querySelectorAll('text');
+      const letras = (t, w, dx, dy) => { t.textContent = ''; [...w].forEach((ch, i) => { const sp = document.createElementNS('http://www.w3.org/2000/svg', 'tspan'); sp.textContent = ch; if (i) { sp.setAttribute('dx', dx); sp.setAttribute('dy', dy[i % dy.length]); } t.appendChild(sp); }); };
+      if (tx[0]) { letras(tx[0], 'Mundo', 4, [-4, 6, -7, 4]); tx[0].setAttribute('rotate', '-7 4 -5 6 -3'); }
+      if (tx[1]) { letras(tx[1], 'Apple', 4, [5, -6, 4, -5]); tx[1].setAttribute('x', '44'); tx[1].setAttribute('rotate', '6 -4 5 -6 4'); }
+    }
+    const h1 = document.querySelector('#hero h1'); if (h1) h1.textContent = 'Tu Apple, al mejor precio';
+    const run = document.querySelector('.ticker .run');
+    if (run) { const fr = ['🍎 iPhone, iPad, Mac, AirPods y Apple Watch', '🔎 El mismo equipo en todas las tiendas', '💳 Precio de contado y cuotas sin interés', '🏷️ iPoint, MacStation, Frávega, Cetrogar, On City, Naldo y Rodó', '📧 Tu lista con los precios de hoy, en tu mail'];
+      run.innerHTML = ''; fr.concat(fr).forEach(t => { const sp = document.createElement('span'); sp.textContent = t; run.appendChild(sp); }); }
+  }
 (function(){
   const $ = id => document.getElementById(id);
   const fmt = n => '$ ' + (Math.round(n*100)/100).toLocaleString('es-AR',{minimumFractionDigits: (Math.round(n*100)%100) ? 2 : 0, maximumFractionDigits:2});
@@ -1922,12 +1941,12 @@
   const esApple = n => APPLE.test(String(n || '')) && ($('apAcc').checked || !ACCESORIO.test(String(n || '')));
   function setApple(on){
     modoApple = on; document.body.classList.toggle('apple', on);
-    $('apBox').hidden = !on; $('apEntra').hidden = on; $('apEntra').setAttribute('aria-pressed', String(on));
+    $('apBox').hidden = !on;
     $('cotoQ').placeholder = on ? 'Ej: iPhone 17 Pro 256GB, AirPods Pro' : 'Ej: heladera, Galaxy A16 o un modelo';
-    try { const u = new URL(location.href); if (on) u.searchParams.set('apple', '1'); else u.searchParams.delete('apple'); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch(_) {}
+    // ?apple=1 (links viejos) pasa a /apple
+    try { const u = new URL(location.href); if (on && u.searchParams.get('apple') === '1') { u.searchParams.delete('apple'); history.replaceState(null, '', '/apple' + u.search + u.hash); } } catch(_) {}
     renderCoto();
   }
-  $('apEntra').addEventListener('click', () => { setApple(true); $('apBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
   $('apSalir').addEventListener('click', () => setApple(false));
   $('apAcc').addEventListener('change', renderCoto);
   $('apChips').addEventListener('click', e => {
@@ -1936,7 +1955,8 @@
     $('cotoQ').value = b.dataset.q; $('cotoForm').requestSubmit();
     setTimeout(() => $('cotoCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
   });
-  if (new URLSearchParams(location.search).get('apple') === '1') setTimeout(() => setApple(true), 0);
+  // Tecno ya no muestra Mundo Apple; en Mundo Apple el recuadro queda fijo (se cambia de app con el menú lateral)
+  if (APP_APPLE) { $('apSalir').hidden = true; setTimeout(() => setApple(true), 0); }
 
   function renderCoto(){
     const box = $('cotoList'); box.innerHTML = '';
@@ -4162,7 +4182,7 @@
   // Login / logout
   async function login(){
     if (!sb) { $('loginErr').textContent = 'El ingreso todavía no está disponible.'; $('loginErr').hidden = false; go('cuenta'); return; }
-    const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/#listas' } });
+    const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + (APP_APPLE ? '/apple' : '/') + '#listas' } });
     if (error) { $('loginErr').textContent = 'No se pudo ingresar. Probá de nuevo.'; $('loginErr').hidden = false; }
   }
   // Ingreso con el botón de Google dentro de la página: Google muestra la dirección de la app
@@ -4376,5 +4396,6 @@
   initSupabase().then(() => { convertirListaVieja(); return errorDeIngreso() || handleLinks(); });
 })();
 </script>
+<script src="/nav-carts.js"></script>
 </body>
 </html>
