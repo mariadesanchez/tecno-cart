@@ -27,6 +27,7 @@
   .logo span{background:var(--tag);color:var(--ink);padding:0 9px;border-radius:9px;margin-left:4px}
   .perfu .logo span{background:var(--mint);color:var(--mint-ink)}
   .tecno .logo span{background:#9B7BFF;color:#fff}
+  .jyd .logo span{background:#FFB020;color:#3A1E00}
   .who{margin-top:6px;font-size:15px;opacity:.95}
   .card{background:var(--card);border-radius:20px;padding:18px;margin:-30px 12px 16px;box-shadow:0 1px 0 rgba(27,33,64,.04),0 10px 24px -14px rgba(27,33,64,.35)}
   .lt small{display:block;color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
@@ -73,6 +74,7 @@
     super: { nombre: 'Super Cart', url: 'https://compras-super-cart.vercel.app', marca: 'Super', donde: 'todos los súper' },
     perfu: { nombre: 'Perfu Cart', url: 'https://perfu-cart.vercel.app', marca: 'Perfu', donde: 'todas las farmacias y perfumerías' },
     tecno: { nombre: 'Tecno Cart', url: 'https://tecno-cart.vercel.app', marca: 'Tecno', donde: 'todas las tiendas de tecnología y electro' },
+    jyd: { nombre: 'Juguetes y Deporte Cart', url: 'https://juguetes-cart-y-deporte-cart.vercel.app', marca: 'Juguetes y Deporte', donde: 'todas las jugueterías y tiendas de deporte' },
   };
   const $ = id => document.getElementById(id);
   const fmt = n => '$ ' + (Math.round(n * 100) / 100).toLocaleString('es-AR', { minimumFractionDigits: (Math.round(n * 100) % 100) ? 2 : 0, maximumFractionDigits: 2 });
@@ -94,6 +96,7 @@
     const A = APPS[appKey] || APPS.super;
     if (appKey === 'perfu') document.body.classList.add('perfu');
     if (appKey === 'tecno') document.body.classList.add('tecno');
+    if (appKey === 'jyd') document.body.classList.add('jyd');
     $('logo').innerHTML = esc(A.marca) + '<span>Cart</span>';
     document.title = (d.nombre || 'Lista') + ' · ' + A.nombre;
     $('who').textContent = (d.de ? d.de + ' te compartió' : 'Te compartieron') + ' una lista de ' + A.nombre;
