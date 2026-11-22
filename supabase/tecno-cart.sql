@@ -158,3 +158,10 @@ alter table public.tecno_perfiles drop constraint if exists tecno_supers_validos
 alter table public.tecno_perfiles add constraint tecno_supers_validos check (cardinality(supers) > 0 and supers <@ array['naldo', 'cetrogar', 'oncity', 'fravega', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation']);
 alter table public.tecno_perfiles alter column supers set default array['naldo', 'cetrogar', 'oncity', 'fravega', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation'];
 update public.tecno_perfiles set supers = supers || array['fravega'] where not (supers @> array['fravega']);
+
+-- Carrefour, ChangoMás y Jumbo (venden tecnología y electro): se suman a las que se pueden elegir para el mail.
+-- Frávega sigue permitida para no romper los perfiles que la tienen, pero ya no se usa.
+alter table public.tecno_perfiles drop constraint if exists tecno_supers_validos;
+alter table public.tecno_perfiles add constraint tecno_supers_validos check (cardinality(supers) > 0 and supers <@ array['naldo', 'cetrogar', 'oncity', 'fravega', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation', 'carrefour', 'changomas', 'jumbo']);
+alter table public.tecno_perfiles alter column supers set default array['naldo', 'cetrogar', 'oncity', 'carrefour', 'changomas', 'jumbo', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation'];
+update public.tecno_perfiles set supers = supers || array['carrefour', 'changomas', 'jumbo'] where not (supers @> array['carrefour']);

@@ -9,6 +9,10 @@ const TIENDAS = {
   oncity:   { nombre: 'On City',  host: 'https://www.oncity.com' },
   samsung:  { nombre: 'Samsung',  host: 'https://shop.samsung.com/ar' },
   motorola: { nombre: 'Motorola', host: 'https://www.motorola.com.ar' },
+  // Supermercados que también venden tecnología y electro (los mismos que en Super Cart)
+  carrefour: { nombre: 'Carrefour', host: 'https://www.carrefour.com.ar' },
+  changomas: { nombre: 'ChangoMás', host: 'https://www.masonline.com.ar' },
+  jumbo:     { nombre: 'Jumbo',     host: 'https://www.jumbo.com.ar' },
   rodo:     { nombre: 'Rodó',     host: 'https://www.rodo.com.ar', magento: true },
   ipoint:   { nombre: 'iPoint',   host: 'https://ipoint.com.ar', prestashop: true },
   macstation: { nombre: 'MacStation', host: 'https://www.macstation.com.ar', odoo: true },

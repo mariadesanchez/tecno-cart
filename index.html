@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tecno Cart">
 <meta name="application-name" content="Tecno Cart">
-<meta name="description" content="Todas las ofertas de cada tienda, comparación de precios de tecnología, celulares y electrodomésticos entre 8 tiendas y tus listas con el mail diario de precios.">
+<meta name="description" content="Todas las ofertas de cada tienda, comparación de precios de tecnología, celulares y electrodomésticos entre 11 tiendas y tus listas con el mail diario de precios.">
 <title>Tecno Cart</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async></script>
@@ -754,7 +754,7 @@
 </style>
 </head>
 <body class="gated">
-<div class="ticker" aria-hidden="true" data-view="inicio"><div class="run"><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span></div></div>
+<div class="ticker" aria-hidden="true" data-view="inicio"><div class="run"><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Carrefour, ChangoMás, Jumbo, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Carrefour, ChangoMás, Jumbo, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span></div></div>
 <header class="hero" id="hero" data-view="inicio">
   <div class="hero-in">
     <div class="brand"><span class="badge" id="netBadge" hidden>Sin conexión</span></div>
@@ -939,13 +939,16 @@
 
   <section class="card" id="prodCard" data-view="inicio">
     <h2><span id="prodTitle">Buscá un producto</span></h2>
-    <div class="hint" style="margin-top:-6px">Escribí el nombre, el modelo o el código de barras: buscamos en las 8 tiendas a la vez.</div>
+    <div class="hint" style="margin-top:-6px">Escribí el nombre, el modelo o el código de barras: buscamos en las 11 tiendas a la vez.</div>
     <div class="seg" id="superSel" role="tablist" aria-label="Tienda" style="margin-top:12px" hidden>
       <button type="button" role="tab" data-super="naldo">Naldo</button>
       <button type="button" role="tab" data-super="cetrogar">Cetrogar</button>
       <button type="button" role="tab" data-super="oncity">On City</button>
       <button type="button" role="tab" data-super="samsung">Samsung</button>
       <button type="button" role="tab" data-super="motorola">Motorola</button>
+      <button type="button" role="tab" data-super="carrefour">Carrefour</button>
+      <button type="button" role="tab" data-super="changomas">ChangoMás</button>
+      <button type="button" role="tab" data-super="jumbo">Jumbo</button>
       <button type="button" role="tab" data-super="rodo">Rodó</button>
       <button type="button" role="tab" data-super="ipoint">iPoint</button>
       <button type="button" role="tab" data-super="macstation">MacStation</button>
@@ -1057,6 +1060,9 @@
           <label><input type="checkbox" value="rodo"><span>Rodó</span></label>
           <label><input type="checkbox" value="ipoint"><span>iPoint</span></label>
           <label><input type="checkbox" value="macstation"><span>MacStation</span></label>
+          <label><input type="checkbox" value="carrefour"><span>Carrefour</span></label>
+          <label><input type="checkbox" value="changomas"><span>ChangoMás</span></label>
+          <label><input type="checkbox" value="jumbo"><span>Jumbo</span></label>
         </div>
         <p class="hint" id="supersTxt" style="margin:6px 0 0"></p>
       </div>
@@ -1422,7 +1428,7 @@
   const SIN_CARRO = { rodo: 1, samsung: 1, motorola: 1, ipoint: 1, macstation: 1 };
   // Cargan el carrito pero después muestran su portada: hay que tocar Carrito
   const VA_A_PORTADA = {};
-  const TIENDA_HOST = { naldo: 'https://www.naldo.com.ar', cetrogar: 'https://www.cetrogar.com.ar', oncity: 'https://www.oncity.com', fravega: 'https://www.fravega.com', samsung: 'https://shop.samsung.com/ar', motorola: 'https://www.motorola.com.ar', rodo: 'https://www.rodo.com.ar', ipoint: 'https://ipoint.com.ar', macstation: 'https://www.macstation.com.ar' };
+  const TIENDA_HOST = { carrefour: 'https://www.carrefour.com.ar', changomas: 'https://www.masonline.com.ar', jumbo: 'https://www.jumbo.com.ar', naldo: 'https://www.naldo.com.ar', cetrogar: 'https://www.cetrogar.com.ar', oncity: 'https://www.oncity.com', fravega: 'https://www.fravega.com', samsung: 'https://shop.samsung.com/ar', motorola: 'https://www.motorola.com.ar', rodo: 'https://www.rodo.com.ar', ipoint: 'https://ipoint.com.ar', macstation: 'https://www.macstation.com.ar' };
   function renderBuy(groups){
     const bx = $('buyBox'); bx.innerHTML = '';
     const SUPER_KEY = superKey();
@@ -1590,7 +1596,7 @@
 
   // ---------- ajustes ----------
   let cfg = Object.assign({ suc: '200', auto: true, super: 'farmaonline' }, store.get('super-ajustes', {}));
-  const SUPERS = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation' };
+  const SUPERS = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation', carrefour: 'Carrefour', changomas: 'ChangoMás', jumbo: 'Jumbo' };
   if (!SUPERS[cfg.super]) cfg.super = 'farmaonline';
   function showCfg(){
     $('cfgSuc').value = cfg.suc || '200';
@@ -3945,7 +3951,7 @@
 
   // ---------- cuenta de Google (Supabase) ----------
   let sb = null, user = null, perfil = null, sessionUid = null, esAdmin = false, tieneSupers = true;
-  const SUPERS_MAIL = ['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation'];
+  const SUPERS_MAIL = ['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation', 'carrefour', 'changomas', 'jumbo'];
   async function initSupabase(){
     try {
       const c = await (await fetch('/api/config')).json();
@@ -4291,7 +4297,7 @@
     const sup = Array.isArray(p.supers) && p.supers.length ? p.supers : SUPERS_MAIL;
     $('supersBox').hidden = (p.modo || 'resumen') !== 'resumen';
     document.querySelectorAll('#supersSel input').forEach(c => { c.checked = sup.includes(c.value); c.disabled = c.checked && sup.length === 1; });
-    const nom = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation' };
+    const nom = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation', carrefour: 'Carrefour', changomas: 'ChangoMás', jumbo: 'Jumbo' };
     $('supersTxt').textContent = sup.length > 1 ? `Te llega un solo mail comparando ${sup.map(s => nom[s]).join(', ').replace(/, ([^,]*)$/, ' y $1')}: el total de tu lista en cada uno y el precio de cada producto, con el más barato marcado.` : `Te llegan los precios de ${nom[sup[0]]}, con las ofertas arriba.`;
     const g = store.get('sale-guardado', 0), n = lists.reduce((s, l) => s + l.items.length, 0);
     $('syncState').textContent = `${lists.length} ${lists.length === 1 ? 'lista' : 'listas'} con ${n} productos guardadas en tu cuenta`
