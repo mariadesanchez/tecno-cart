@@ -244,7 +244,7 @@ async function handler(req, res) {
     if (tienda.web) {
       // Frávega: buscador de su web (lo que realmente se vende, con el precio de hoy). Si no responde, el catálogo viejo.
       try { productos = await fravegaWeb.buscar({ q: q || codigo, limite }); buscadoPor = 'nombre'; }
-      catch (e) { webFallo = true; }
+      catch (e) { webFallo = String(e && e.message || e).slice(0, 200) || true; }
     } else if (tienda.magento) {
       productos = await magento.buscar(tienda.host, { q, limite });
       buscadoPor = 'nombre';
@@ -279,7 +279,7 @@ async function handler(req, res) {
     productos.sort((a, b) => (Number(b.exacto) - Number(a.exacto)) || (Number(a.sin_stock) - Number(b.sin_stock)));
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
     res.statusCode = 200;
-    return res.end(JSON.stringify({ ok: true, super: tienda.nombre, buscado_por: buscadoPor, total: productos.length, productos }));
+    return res.end(JSON.stringify(Object.assign({ ok: true, super: tienda.nombre, buscado_por: buscadoPor, total: productos.length, productos }, tienda.web ? { fuente: webFallo ? 'catalogo' : 'web', aviso: webFallo || undefined } : {})));
   } catch (err) {
     res.statusCode = 502;
     return res.end(JSON.stringify({ ok: false, error: 'No se pudo consultar a ' + tienda.nombre }));
