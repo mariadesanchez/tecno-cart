@@ -323,7 +323,7 @@
   .scard .sstores span:nth-child(even){text-align:right;font-variant-numeric:tabular-nums}
   .scard .sstores span.best{color:var(--ink);font-weight:800}
   .scard .sacts{grid-column:1/-1;display:flex;gap:8px}
-  .scard .sacts .btn{flex:1;padding:10px;font-size:14px}
+  .scard .sacts .btn{flex:1 1 0;min-width:0;padding:10px;font-size:14px}
   .scard .off{position:static;display:inline-block;margin-left:6px;vertical-align:middle}
   .cmp-add{margin-top:12px}
   .sheet{position:fixed;inset:0;z-index:40}
@@ -1667,6 +1667,14 @@
   }
   // ---------- Buscar en las 5 tiendas a la vez (agrupado por código de barras) ----------
   let sGroups = [], sReq = 0;
+  // Modelo del producto (HDR370F50B, SM-A165M): sirve para reconocer el mismo producto en tiendas que no publican el código de barras
+  const MEDIDA_M = /^\d+(?:[.,]\d+)?(GB|TB|MB|MAH|W|HZ|LT|L|KG|CM|MM|MP|FPS|V|BTU|FRIGORIAS|PULG|P)$/;
+  function modelosDe(nombre){
+    return String(nombre || '').toUpperCase().replace(/[^A-Z0-9\-\/ ]/g, ' ').split(/[\s\/]+/).map(t => t.replace(/^-+|-+$/g, ''))
+      .filter(t => t.length >= 5 && /[A-Z]/.test(t) && /\d/.test(t) && !MEDIDA_M.test(t) && !/^\dG$/.test(t));
+  }
+  const modeloDe = nombre => modelosDe(nombre).sort((a, b) => b.length - a.length)[0] || '';
+  const esEan = c => /^\d{8,14}$/.test(String(c || ''));
   async function searchAll(q){
     const my = ++sReq; sGroups = []; cotoMain = []; cotoSimilar = [];
     const keys = Object.keys(SUPERS); let listas = 0;
@@ -1678,10 +1686,14 @@
         const d = r.ok ? await r.json() : {};
         if (my !== sReq) return;
         (d.productos || []).forEach((pr, i) => {
-          const key = pr.ean || ('n:' + String(pr.nombre || '').toLowerCase());
-          let g = sGroups.find(x => x.key === key);
-          if (!g) { g = { key, ean: pr.ean || '', nombre: pr.nombre, marca: pr.marca || '', imagen: pr.imagen || '', por: {}, rank: i }; sGroups.push(g); }
+          // Mismo producto: mismo código de barras o mismo modelo
+          const ean = esEan(pr.ean) ? pr.ean : '', mods = new Set(modelosDe(pr.nombre).concat(pr.ean && !ean ? [String(pr.ean).toUpperCase()] : []));
+          let g = sGroups.find(x => (ean && x.ean === ean) || [...mods].some(m => x.mods.has(m))) || sGroups.find(x => x.key === 'n:' + String(pr.nombre || '').toLowerCase());
+          if (!g) { g = { key: ean || 'n:' + String(pr.nombre || '').toLowerCase(), ean, mods: new Set(), nombre: pr.nombre, marca: pr.marca || '', imagen: pr.imagen || '', por: {}, rank: i }; sGroups.push(g); }
+          mods.forEach(m => g.mods.add(m));
+          if (!g.ean && ean) g.ean = ean;
           if (!g.imagen && pr.imagen) g.imagen = pr.imagen;
+          if (g.por[k] && (g.por[k].precio_promo || g.por[k].precio) <= (pr.precio_promo || pr.precio)) return;
           g.rank = Math.min(g.rank, i); g.por[k] = pr;
         });
       } catch(_) {}
@@ -1691,10 +1703,35 @@
       renderCoto();
     }));
     if (my !== sReq) return;
+    completarGrupos(my);
     const n = sGroups.filter(g => mejorDe(g)).length;
     $('cotoInfo').textContent = n ? n + (n === 1 ? ' producto' : ' productos') + '. Te mostramos el precio más bajo; tocá “Comparar” para verlo en cada tienda.'
       : 'No encontré productos con ese nombre. Probá con otras palabras o con el código de barras.';
     renderCoto();
+  }
+  // Los primeros resultados se buscan también en las tiendas donde no aparecieron (por código o por modelo), para mostrar todos los precios
+  async function completarGrupos(my){
+    const gs = sGroups.filter(g => mejorDe(g)).sort((a, b) => (Object.keys(b.por).length - Object.keys(a.por).length) || (a.rank - b.rank)).slice(0, 12);
+    const tareas = [];
+    gs.forEach(g => {
+      const codigo = g.ean || modeloDe(g.nombre) || [...g.mods][0] || '';
+      if (!codigo) return;
+      Object.keys(SUPERS).filter(k => !g.por[k]).forEach(k => tareas.push({ g, k, codigo }));
+    });
+    let i = 0, cambio = false;
+    const worker = async () => {
+      while (i < tareas.length && my === sReq) {
+        const t = tareas[i++];
+        try {
+          const r = await fetch('/api/vtex?tienda=' + t.k + '&' + new URLSearchParams({ ean: t.codigo, q: String(t.g.nombre || '').slice(0, 80), limite: '8' }).toString());
+          const d = r.ok ? await r.json() : {};
+          const pr = (d.productos || []).find(x => x.exacto && !x.sin_stock);
+          if (pr && my === sReq && !t.g.por[t.k]) { t.g.por[t.k] = pr; if (!t.g.imagen && pr.imagen) t.g.imagen = pr.imagen; cambio = true; }
+        } catch(_) {}
+      }
+    };
+    await Promise.all([1, 2, 3, 4, 5, 6].map(worker));
+    if (cambio && my === sReq) renderCoto();
   }
   function mejorDe(g){
     let b = null;
@@ -1716,11 +1753,11 @@
     saveLists(); renderLists(); if (view === 'listas') renderBuilder();
   }
   function searchCard(g){
-    const b = mejorDe(g), l = ensureList(), inList = g.ean && l.items.find(i => i.ean === g.ean);
+    const b = mejorDe(g), l = ensureList(), codigoG = g.ean || modeloDe(g.nombre) || [...g.mods][0] || '', inList = codigoG && l.items.find(i => i.ean === codigoG);
     const el = document.createElement('div'); el.className = 'scard';
     el.innerHTML = `<img alt="" loading="lazy"><div style="min-width:0"><div class="sn"></div><div class="sb"></div>
       <div class="sbest"><b>${fmt(b.v)}</b> en <span class="st"></span></div><div class="sstores"></div></div>
-      <div class="sacts"><button type="button" class="btn ${inList ? 'btn-ghost added' : 'btn-primary'}" data-a="add"></button>${g.ean ? '<button type="button" class="btn btn-ghost" data-a="cmp">Comparar</button>' : ''}</div>`;
+      <div class="sacts"><button type="button" class="btn ${inList ? 'btn-ghost added' : 'btn-primary'}" data-a="add"></button><button type="button" class="btn btn-ghost" data-a="cmp">Comparar</button></div>`;
     const img = el.querySelector('img'); if (g.imagen) img.src = g.imagen; else img.style.visibility = 'hidden';
     img.onerror = () => { img.style.visibility = 'hidden'; };
     el.querySelector('.sn').textContent = g.nombre;
@@ -1739,11 +1776,11 @@
       el.querySelector('.sbest').after(w);
     }
     const ab = el.querySelector('[data-a=add]'); ab.textContent = inList ? '✓ En ' + l.name : '+ A mi lista';
-    ab.addEventListener('click', () => { addToMyList(b.p, b.k); renderCoto(); });
+    ab.addEventListener('click', () => { addToMyList(Object.assign({}, b.p, { ean: codigoG || b.p.ean }), b.k); renderCoto(); });
     const cb = el.querySelector('[data-a=cmp]');
-    const comparar = () => { handleCode(g.ean, g.nombre); setTimeout(() => $('cotoCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); };
+    const comparar = () => { handleCode(codigoG || g.nombre, g.nombre); setTimeout(() => $('cotoCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); };
     if (cb) cb.addEventListener('click', comparar);
-    if (g.ean) [img, el.querySelector('.sn')].forEach(x => x.addEventListener('click', comparar));
+    [img, el.querySelector('.sn')].forEach(x => x.addEventListener('click', comparar));
     return el;
   }
   function renderCoto(){
