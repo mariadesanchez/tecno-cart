@@ -146,6 +146,17 @@ function rubroVtex(p) {
   return '';
 }
 
+// Frávega: la dirección del producto usa el número de artículo (SKU), no el de producto
+// (fravega.com/p/<nombre>-<sku>/; con el de producto da "La página no existe")
+function linkTienda(p, item) {
+  const l = String(p.link || '');
+  if (/fravega\.com/.test(l) && item && item.itemId) {
+    const slug = String(p.linkText || '').replace(/-\d+$/, '');
+    return 'https://www.fravega.com/p/' + slug + '-' + item.itemId + '/';
+  }
+  return l;
+}
+
 function mapear(products, ean) {
   const out = [];
   for (const p of products || []) {
@@ -185,7 +196,7 @@ function mapear(products, ean) {
       exacto: !!(ean && item.ean === ean),
       sin_stock: sinStock,
       rubro: rubroVtex(p),
-      link: p.link || '',
+      link: linkTienda(p, item),
       modelo: rel.modeloLimpio(p.productReference),
       medidas: rel.medidas(rel.textoMedidas(p)),
       sku: String(item.itemId || ''),
