@@ -8,7 +8,7 @@
   "rewrites": [
     {
       "source": "/apple",
-      "destination": "/index.html"
+      "destination": "/"
     }
   ]
 }
