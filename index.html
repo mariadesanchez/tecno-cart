@@ -4426,7 +4426,8 @@
     $('modoBox').hidden = !p.avisos;
     document.querySelectorAll('input[name="modo"]').forEach(r => { r.checked = r.value === (p.modo || 'resumen'); });
     // Tiendas del resumen diario
-    const sup = Array.isArray(p.supers) && p.supers.length ? p.supers : SUPERS_MAIL;
+    const supOk = Array.isArray(p.supers) ? p.supers.filter(s => SUPERS_MAIL.includes(s)) : [];
+    const sup = supOk.length ? supOk : SUPERS_MAIL;
     $('supersBox').hidden = (p.modo || 'resumen') !== 'resumen';
     document.querySelectorAll('#supersSel input').forEach(c => { c.checked = sup.includes(c.value); c.disabled = c.checked && sup.length === 1; });
     const nom = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation', carrefour: 'Carrefour', changomas: 'ChangoMás', jumbo: 'Jumbo' };
