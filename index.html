@@ -1744,6 +1744,17 @@
     return String(nombre || '').toUpperCase().replace(/[^A-Z0-9\-\/ ]/g, ' ').split(/[\s\/]+/).map(t => t.replace(/^-+|-+$/g, ''))
       .filter(t => t.length >= 5 && /[A-Z]/.test(t) && /\d/.test(t) && !MEDIDA_M.test(t) && !/^\dG$/.test(t) && !/SELLERPROD/.test(t));
   }
+  // Dos productos con el mismo modelo pero distinta marca, pulgadas o litros no son el mismo
+  // (Samsung QN70H viene en 55" y 75"; Frávega a veces carga un RCA con el modelo de un TCL)
+  function compatibles(g, pr){
+    const N = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    const med = (s, re) => { const m = re.exec(N(s)); return m ? Number(m[1]) : null; };
+    const MEDIDAS = [/(\d{2,3})\s*(?:"|''|\u201D|PULG)/, /\b(\d{2,4})\s*(?:L|LT|LTS|LITROS?)\b/];
+    for (const re of MEDIDAS) { const a = med(g.nombre, re), b = med(pr.nombre, re); if (a && b && a !== b) return false; }
+    const ma = N(g.marca).trim(), mb = N(pr.marca).trim();
+    if (ma && mb && !ma.includes(mb) && !mb.includes(ma)) return false;
+    return true;
+  }
   const modeloDe = nombre => modelosDe(nombre).sort((a, b) => b.length - a.length)[0] || '';
   const esEan = c => /^\d{8,14}$/.test(String(c || ''));
   async function searchAll(q){
@@ -1759,7 +1770,7 @@
         (d.productos || []).forEach((pr, i) => {
           // Mismo producto: mismo código de barras o mismo modelo
           const ean = esEan(pr.ean) ? pr.ean : '', mods = new Set(modelosDe(pr.nombre + ' ' + (pr.modelo || '')).concat(pr.ean && !ean ? [String(pr.ean).toUpperCase()] : []));
-          let g = sGroups.find(x => (ean && x.ean === ean) || [...mods].some(m => x.mods.has(m))) || sGroups.find(x => x.key === 'n:' + String(pr.nombre || '').toLowerCase());
+          let g = sGroups.find(x => (ean && x.ean === ean) || ([...mods].some(m => x.mods.has(m)) && compatibles(x, pr))) || sGroups.find(x => x.key === 'n:' + String(pr.nombre || '').toLowerCase());
           if (!g) { g = { key: ean || 'n:' + String(pr.nombre || '').toLowerCase(), ean, mods: new Set(), nombre: pr.nombre, marca: pr.marca || '', imagen: pr.imagen || '', por: {}, rank: i }; sGroups.push(g); }
           mods.forEach(m => g.mods.add(m));
           if (!g.ean && ean) g.ean = ean;
@@ -1796,7 +1807,7 @@
         try {
           const r = await fetch('/api/vtex?tienda=' + t.k + '&' + new URLSearchParams({ ean: t.codigo, q: String(t.g.nombre || '').slice(0, 80), limite: '8' }).toString());
           const d = r.ok ? await r.json() : {};
-          const pr = (d.productos || []).find(x => x.exacto && !x.sin_stock);
+          const pr = (d.productos || []).find(x => x.exacto && !x.sin_stock && ((t.g.ean && x.ean === t.g.ean) || compatibles(t.g, x)));
           if (pr && my === sReq && !t.g.por[t.k]) { t.g.por[t.k] = pr; if (!t.g.imagen && pr.imagen) t.g.imagen = pr.imagen; cambio = true; }
         } catch(_) {}
       }
