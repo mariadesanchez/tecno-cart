@@ -1793,7 +1793,7 @@
     fusionarGrupos();
     completarGrupos(my);
     const n = sGroups.filter(g => mejorDe(g)).length;
-    $('cotoInfo').textContent = n ? n + (n === 1 ? ' producto' : ' productos') + '. Te mostramos el precio más bajo; tocá “Comparar” para verlo en cada tienda.'
+    $('cotoInfo').textContent = n ? n + (n === 1 ? ' producto' : ' productos') + '. Primero el precio más bajo; tocá una tienda para ir al producto.'
       : 'No encontré productos con ese nombre. Probá con otras palabras o con el código de barras.';
     renderCoto();
   }
