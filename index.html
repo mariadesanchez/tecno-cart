@@ -1366,7 +1366,7 @@
     if (!SUPERS[k]) return;   // tienda de la otra app: los datos ya vienen del cruce
     if (!it.ean) return;
     try {
-      const r = await fetch('/api/vtex?tienda=' + k + '&ean=' + encodeURIComponent(it.ean) + '&limite=5');
+      const r = await fetch('/api/vtex?tienda=' + k + '&ean=' + encodeURIComponent(it.ean) + '&q=' + encodeURIComponent(String(it.name || '').slice(0, 80)) + '&limite=5');
       const d = await r.json();
       const p = (d.productos || []).find(p => p.exacto);
       if (p) { it.sku = p.sku || ''; it.seller = p.seller || ''; it.link = p.link || it.link || ''; }
@@ -2291,7 +2291,8 @@
 
   // Busca un producto de la lista en un súper
   async function findIn(k, item){
-    const params = new URLSearchParams({ q: item.ean ? '' : item.name, ean: item.ean || '', sucursal: cfg.suc || '200', limite: '12' });
+    // En electro el código de barras no siempre está: va también el nombre, para reconocerlo por el modelo
+    const params = new URLSearchParams({ q: String(item.name || '').slice(0, 80), ean: item.ean || '', sucursal: cfg.suc || '200', limite: '12' });
     const url = k === 'coto' ? '/api/coto?' : '/api/vtex?tienda=' + k + '&';
     try {
       const r = await fetch(url + params.toString());
@@ -3187,7 +3188,7 @@
       while (queue.length) {
         const it = queue.shift();
         try {
-          const params = new URLSearchParams({ ean: it.ean, sucursal: cfg.suc || '200' });
+          const params = new URLSearchParams({ ean: it.ean, q: String(it.name || '').slice(0, 80), sucursal: cfg.suc || '200' });
           const url = sk === 'coto' ? '/api/coto?' : '/api/vtex?tienda=' + sk + '&';
           const r = await fetch(url + params.toString());
           if (!r.ok) throw new Error('http ' + r.status);

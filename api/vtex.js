@@ -168,8 +168,12 @@ async function handler(req, res) {
     res.statusCode = 400;
     return res.end(JSON.stringify({ ok: false, error: 'Tienda desconocida', tiendas: Object.keys(TIENDAS) }));
   }
-  const q = String(query.q || '').trim().slice(0, 80);
-  const ean = String(query.ean || '').replace(/\D/g, '').slice(0, 14);
+  let q = String(query.q || '').trim().slice(0, 80);
+  // Algunas tiendas (Cetrogar) usan el modelo como "código": si no es un código de barras, se busca por el modelo
+  const codigo = String(query.ean || '').trim().slice(0, 30);
+  const ean = /^\d{8,14}$/.test(codigo) ? codigo : '';
+  if (!ean && codigo && modelos(codigo).size && !q.toUpperCase().includes(codigo.toUpperCase())) q = (q + ' ' + codigo).trim().slice(0, 100);
+  const buscaModelo = !ean && codigo ? codigo : '';
   const limite = Math.min(Math.max(parseInt(query.limite, 10) || 48, 1), 50);
   if (!q && !ean) {
     res.statusCode = 400;
@@ -190,7 +194,7 @@ async function handler(req, res) {
       productos = mapear(await buscar(tienda.host, `ft=${encodeURIComponent(q)}&_from=0&_to=${limite - 1}`), ean);
       buscadoPor = 'nombre';
     }
-    if (ean && q) marcarPorModelo(productos, q);
+    if ((ean || buscaModelo) && q) marcarPorModelo(productos, q);
     if (buscadoPor === 'nombre' && productos.some(p => p.por_modelo)) buscadoPor = 'modelo';
     productos.sort((a, b) => (Number(b.exacto) - Number(a.exacto)) || (Number(a.sin_stock) - Number(b.sin_stock)));
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
