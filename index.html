@@ -320,8 +320,11 @@
   .scard .sbest b{font-size:19px;color:var(--price-hot)}
   .scard .sstores{display:flex;flex-direction:column;gap:1px;margin-top:8px;font-size:13px;color:var(--muted)}
   .scard .srow{display:grid;grid-template-columns:1fr auto;gap:12px;padding:5px 8px;margin:0 -8px;border-radius:8px;color:inherit;text-decoration:none}
-  .scard a.srow:hover{background:rgba(0,0,0,.05)}
-  .scard a.srow:active{background:rgba(0,0,0,.09)}
+  /* Cada tienda es un link: al pasar el mouse se pone morada y se subraya el nombre */
+  .scard a.srow{cursor:pointer;transition:background .12s,color .12s}
+  .scard a.srow:hover,.scard a.srow:focus-visible{background:#F1E9FF;color:#7B2FF7!important;outline:none}
+  .scard a.srow:hover span:first-child,.scard a.srow:focus-visible span:first-child{text-decoration:underline;text-underline-offset:3px}
+  .scard a.srow:active{background:#E4D5FF}
   .scard .srow span:last-child{text-align:right;font-variant-numeric:tabular-nums}
   .scard .srow.best{color:var(--ink);font-weight:800}
   .scard .srow.worst{color:var(--danger)}
