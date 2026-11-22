@@ -764,6 +764,8 @@
   .mv-b:hover{filter:brightness(1.08)}
   .mv-new{display:flex;gap:6px;padding:8px 4px 2px;border-top:1px solid #F2ECF5}
   .mv-new input{flex:1;min-width:0;border:1.5px solid #E6DDF0;border-radius:10px;padding:7px 9px;font:inherit;font-size:13px}
+  .cmp-viejo{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#F6F3FC;font-size:13px;color:var(--muted)}
+  .cmp-viejo button{appearance:none;border:0;border-radius:10px;padding:7px 12px;font:inherit;font-size:13px;font-weight:800;color:#7B2FF7;background:#EDE3FF;cursor:pointer}
 </style>
 </head>
 <body class="gated">
@@ -2540,6 +2542,7 @@
   const unitFor = (p, qty) => (p.precio_promo && qty >= lleva(p)) ? p.precio_promo : p.precio;
 
   async function runList(l, box){
+    box._cmpAviso = null;   // comparación nueva: sin el aviso de "comparación de hace…"
     let fotosNuevas = false;
     box.hidden = false;
     box.innerHTML = '<div class="hint"><span class="spinner"></span>Comparando precios… 0/' + l.items.length + '</div>';
@@ -2554,6 +2557,56 @@
     }
     if (fotosNuevas) { saveLists(); if (view === 'listas') renderBuilderItems(); }
     renderPlan(l, box, res);
+    guardarComparacion(l, res);
+  }
+
+  // ---------- La comparación queda guardada: al volver a la lista (o a la app) no hay que comparar de nuevo ----------
+  var CMP_KEY = 'comparaciones', CMP_VIGENCIA = 12 * 3600e3;   // var: renderBuilder puede correr antes de esta línea al arrancar
+  function guardarComparacion(l, res){
+    try {
+      const all = store.get(CMP_KEY, {}) || {};
+      all[l.id] = { t: Date.now(), res };
+      const out = {}; Object.keys(all).sort((a, b) => all[b].t - all[a].t).slice(0, 5).forEach(id => { out[id] = all[id]; });   // las últimas 5 listas
+      store.set(CMP_KEY, out);
+    } catch(_) { /* sin lugar en el navegador: no se guarda */ }
+  }
+  var restaurando = null;
+  async function restaurarComparacion(l){
+    const box = $('bPlan');
+    if (!l.items.length || (!box.hidden && box.innerHTML) || restaurando === l.id) return;
+    const c = (store.get(CMP_KEY, {}) || {})[l.id];
+    if (!c || !c.res || Date.now() - c.t > CMP_VIGENCIA) return;
+    const res = c.res, keys = Object.keys(SUPERS);
+    const falta = l.items.filter(it => !res[it.id]);
+    if (falta.length > Math.max(3, l.items.length / 2)) return;   // la lista cambió mucho: mejor comparar de nuevo
+    restaurando = l.id;
+    try {
+      box.hidden = false;
+      if (falta.length) {
+        // Solo se buscan los productos que se sumaron después de comparar
+        box.innerHTML = '<div class="hint"><span class="spinner"></span>Sumando ' + falta.length + (falta.length === 1 ? ' producto nuevo' : ' productos nuevos') + ' a tu comparación…</div>';
+        for (const it of falta) { res[it.id] = {}; await Promise.all(keys.map(async k => { res[it.id][k] = await findIn(k, it); })); }
+        guardarComparacion(l, res);
+      }
+      if (ensureList() !== l || view !== 'listas') { box.hidden = true; box.innerHTML = ''; return; }
+      renderPlan(l, box, res);
+      avisoComparacion(box, falta.length ? Date.now() : c.t, l);
+    } finally { restaurando = null; }
+  }
+  function avisoComparacion(box, t, l){
+    box._cmpAviso = { t, l };
+    // La comparación se redibuja sola (cuando llegan los datos de la otra app): el aviso vuelve a ponerse
+    if (!box._cmpObs) {
+      box._cmpObs = new MutationObserver(() => { const a = box._cmpAviso; if (a && box.innerHTML && !box.querySelector('.cmp-viejo') && !box.querySelector('.hint .spinner')) avisoComparacion(box, a.t, a.l); });
+      box._cmpObs.observe(box, { childList: true });
+    }
+    if (box.querySelector('.cmp-viejo')) return;
+    const min = Math.max(0, Math.round((Date.now() - t) / 60000));
+    const d = document.createElement('div'); d.className = 'cmp-viejo';
+    d.innerHTML = '<span></span><button type="button">Comparar de nuevo</button>';
+    d.querySelector('span').textContent = '🕒 Comparación ' + (min < 1 ? 'de recién' : min < 60 ? 'de hace ' + min + ' min' : 'de hace ' + Math.round(min / 60) + ' h') + (min >= 60 ? ': los precios pueden haber cambiado.' : '.');
+    d.querySelector('button').addEventListener('click', () => runList(l, box));
+    box.prepend(d);
   }
 
   let planTienda = null;
@@ -3506,6 +3559,7 @@
     const sel = $('bList'); sel.innerHTML = '';
     lists.forEach(x => { const o = document.createElement('option'); o.value = x.id; o.textContent = `${x.name} (${x.items.length})`; if (x.id === l.id) o.selected = true; sel.appendChild(o); });
     renderBuilderSupers(); renderBuilderItems(); renderBuilderResults();
+    restaurarComparacion(l);
   }
   $('bRun').addEventListener('click', () => {
     const l = ensureList(); if (!l.items.length) return;
