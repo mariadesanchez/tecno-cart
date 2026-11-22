@@ -323,6 +323,19 @@
   .scard .sstores span:nth-child(even){text-align:right;font-variant-numeric:tabular-nums}
   .scard .sstores span.best{color:var(--ink);font-weight:800}
   .scard .sacts{grid-column:1/-1;display:flex;gap:8px}
+  /* barra de rango de precios de los resultados */
+  .prango{margin:10px 0 4px;padding:12px 14px 14px;border:2px solid var(--line);border-bottom-width:4px;border-radius:16px;background:var(--card)}
+  .pr-top{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+  .pr-top b{color:var(--ink);font-size:15px}
+  .pr-reset{margin-left:auto;appearance:none;border:0;background:transparent;color:var(--accent);font:inherit;font-weight:700;font-size:13px;cursor:pointer;padding:2px 0}
+  .pr-track{position:relative;height:30px;margin-top:6px}
+  .pr-track::before{content:"";position:absolute;left:0;right:0;top:13px;height:6px;border-radius:6px;background:var(--line)}
+  .pr-fill{position:absolute;top:13px;height:6px;border-radius:6px;background:var(--accent)}
+  .pr-track input{position:absolute;left:0;top:0;width:100%;height:30px;margin:0;background:transparent;pointer-events:none;-webkit-appearance:none;appearance:none}
+  .pr-track input::-webkit-slider-runnable-track{background:transparent;height:30px}
+  .pr-track input::-moz-range-track{background:transparent}
+  .pr-track input::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;width:24px;height:24px;margin-top:3px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 2px 0 var(--accent-deep),0 4px 10px rgba(0,0,0,.2);cursor:pointer}
+  .pr-track input::-moz-range-thumb{pointer-events:auto;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 2px 0 var(--accent-deep);cursor:pointer}
   .scard .sacts .btn{flex:1 1 0;min-width:0;padding:10px;font-size:14px}
   .scard .off{position:static;display:inline-block;margin-left:6px;vertical-align:middle}
   .cmp-add{margin-top:12px}
@@ -935,6 +948,13 @@
         <option value="asc">Menor precio</option>
         <option value="desc">Mayor precio</option>
       </select>
+    </div>
+    <div class="prango" id="pRango" hidden>
+      <div class="pr-top"><span>Precio</span><b id="prTxt"></b><button type="button" class="pr-reset" id="prReset" hidden>Quitar filtro</button></div>
+      <div class="pr-track"><div class="pr-fill" id="prFill"></div>
+        <input type="range" id="prMin" min="0" max="1000" step="1" value="0" aria-label="Precio mínimo">
+        <input type="range" id="prMax" min="0" max="1000" step="1" value="1000" aria-label="Precio máximo">
+      </div>
     </div>
     <div id="cmp"></div>
     <div id="cotoList"></div>
@@ -1783,10 +1803,40 @@
     [img, el.querySelector('.sn')].forEach(x => x.addEventListener('click', comparar));
     return el;
   }
+  // ---------- Barra de rango de precios: acota los resultados (escala logarítmica entre el más barato y el más caro) ----------
+  const rango = { ref: null, a: 0, b: 0, lo: 0, hi: 1000 };
+  const rPrecio = pos => rango.a * Math.pow(rango.b / rango.a, pos / 1000);
+  const rRedondeo = v => { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(v)) - 1)); return Math.round(v / p) * p; };
+  function rangoPintar(){
+    const lo = Math.min(rango.lo, rango.hi), hi = Math.max(rango.lo, rango.hi);
+    $('prFill').style.left = (lo / 10) + '%'; $('prFill').style.width = ((hi - lo) / 10) + '%';
+    $('prTxt').textContent = fmt(rRedondeo(rPrecio(lo))) + ' a ' + fmt(rRedondeo(rPrecio(hi)));
+    $('prReset').hidden = lo === 0 && hi === 1000;
+  }
+  function rangoFiltrar(gs){
+    if (rango.ref !== sGroups) { rango.ref = sGroups; rango.lo = 0; rango.hi = 1000; $('prMin').value = 0; $('prMax').value = 1000; }
+    const vs = gs.map(g => mejorDe(g).v).filter(v => v > 0);
+    if (vs.length < 3 || Math.max(...vs) < Math.min(...vs) * 1.2) { $('pRango').hidden = true; return gs; }
+    rango.a = Math.min(...vs); rango.b = Math.max(...vs);
+    $('pRango').hidden = false; rangoPintar();
+    const lo = Math.min(rango.lo, rango.hi), hi = Math.max(rango.lo, rango.hi);
+    const desde = lo > 0 ? rPrecio(lo) - 0.5 : 0, hasta = hi < 1000 ? rPrecio(hi) + 0.5 : Infinity;
+    return gs.filter(g => { const v = mejorDe(g).v; return v >= desde && v <= hasta; });
+  }
+  let rangoRaf = 0;
+  ['prMin', 'prMax'].forEach(id => $(id).addEventListener('input', () => {
+    rango.lo = Number($('prMin').value); rango.hi = Number($('prMax').value);
+    rangoPintar(); cancelAnimationFrame(rangoRaf); rangoRaf = requestAnimationFrame(() => renderCoto());
+  }));
+  $('prReset').addEventListener('click', () => { rango.lo = 0; rango.hi = 1000; $('prMin').value = 0; $('prMax').value = 1000; renderCoto(); });
+
   function renderCoto(){
     const box = $('cotoList'); box.innerHTML = '';
     const sort = $('cotoSort').value;
-    const gs = sGroups.filter(g => mejorDe(g));
+    const todos = sGroups.filter(g => mejorDe(g));
+    const gs = rangoFiltrar(todos);
+    if (todos.length && !gs.length) { const h = document.createElement('div'); h.className = 'hint'; h.textContent = 'No hay productos en ese rango de precios. Mové la barra o tocá “Quitar filtro”.'; box.appendChild(h); }
+    else if (gs.length < todos.length) { const h = document.createElement('div'); h.className = 'hint'; h.style.margin = '2px 0 8px'; h.textContent = 'Mostrando ' + gs.length + ' de ' + todos.length + ' productos en ese rango de precios.'; box.appendChild(h); }
     gs.sort((a, b) => sort === 'asc' ? mejorDe(a).v - mejorDe(b).v : (Object.keys(b.por).length - Object.keys(a.por).length) || (a.rank - b.rank));
     if (!gs.length) return;
     if (cmpState) { const h = document.createElement('div'); h.className = 'sub'; h.textContent = 'Otros resultados'; box.appendChild(h); }
