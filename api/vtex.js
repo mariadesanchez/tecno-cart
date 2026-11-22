@@ -151,7 +151,9 @@ function rubroVtex(p) {
 function linkTienda(p, item) {
   const l = String(p.link || '');
   if (/fravega\.com/.test(l) && item && item.itemId) {
-    const slug = String(p.linkText || '').replace(/-\d+$/, '');
+    // El nombre a veces trae saltos de línea u otros signos: se limpia como lo hace Frávega
+    const slug = String(p.linkText || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      .replace(/-\d+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     return 'https://www.fravega.com/p/' + slug + '-' + item.itemId + '/';
   }
   return l;
@@ -180,7 +182,7 @@ function mapear(products, ean) {
       if (cons > 0 && fac > 0) ppu = Math.round(precio / (cons * fac) * 100) / 100;
     }
     out.push({
-      nombre: p.productName || item.nameComplete || '',
+      nombre: String(p.productName || item.nameComplete || '').replace(/\s+/g, ' ').trim(),
       marca: p.brand || '',
       ean: item.ean || (/^\d{12,14}$/.test(String(p.productReference || '').trim()) ? String(p.productReference).trim() : ''),   // Frávega pone el código de barras en la referencia
       precio,
