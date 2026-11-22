@@ -276,7 +276,7 @@ async function handler(req, res) {
           buscar(tienda.host, `ft=${encodeURIComponent(qOriginal)}&_from=0&_to=49`).catch(() => []),
         ]);
         const extra = mapear([].concat(pag2 || [], conMedida || []), ean);
-        const ya = new Set(productos.map(p => p.link)); extra.forEach(p => { if (!ya.has(p.link)) productos.push(p); });
+        const ya = new Set(productos.map(p => p.link)); extra.forEach(p => { if (p.link && !ya.has(p.link)) { ya.add(p.link); productos.push(p); } });
       } catch (_) { /* con lo que hay */ }
     }
     if ((ean || buscaModelo) && q) marcarPorModelo(productos, q);
