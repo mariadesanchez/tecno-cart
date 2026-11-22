@@ -215,6 +215,7 @@ async function handler(req, res) {
   const buscaModelo = !ean && codigo ? codigo : '';
   // Medidas pedidas ("horno eléctrico 20 L"): se busca sin ellas y después se dejan solo los que las tienen
   const medQ = !ean && !buscaModelo ? rel.medidas(q) : [];
+  const qOriginal = q;
   if (medQ.length) q = rel.sinMedidas(q) || q;
   const limitePedido = Math.min(Math.max(parseInt(query.limite, 10) || 48, 1), 50);
   const limite = medQ.length ? 50 : limitePedido;
@@ -242,6 +243,13 @@ async function handler(req, res) {
     if (!tienda.magento && !tienda.prestashop && !tienda.odoo && !productos.length && q) {
       productos = mapear(await buscar(tienda.host, `ft=${encodeURIComponent(q)}&_from=0&_to=${limite - 1}`), ean);
       buscadoPor = 'nombre';
+    }
+    // Con medida, también se busca con la medida puesta (la tienda devuelve primero los más grandes)
+    if (medQ.length && !tienda.magento && !tienda.prestashop && !tienda.odoo) {
+      try {
+        const extra = mapear(await buscar(tienda.host, `ft=${encodeURIComponent(qOriginal)}&_from=0&_to=49`), ean);
+        const ya = new Set(productos.map(p => p.link)); extra.forEach(p => { if (!ya.has(p.link)) productos.push(p); });
+      } catch (_) { /* con lo que hay */ }
     }
     if ((ean || buscaModelo) && q) marcarPorModelo(productos, q);
     if (buscadoPor === 'nombre' && productos.some(p => p.por_modelo)) buscadoPor = 'modelo';
