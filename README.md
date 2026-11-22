@@ -1,6 +1,6 @@
 # Tecno Cart
 
-Compara precios de tecnología, celulares y electrodomésticos en Naldo, Cetrogar, On City, Rodó, Samsung y Motorola.
+Compara precios de tecnología, celulares y electrodomésticos en Naldo, Cetrogar, On City, Rodó, Samsung, Motorola, iPoint y MacStation.
 
 - `api/vtex.js`: búsqueda por código de barras, nombre o modelo (VTEX y Magento).
 - `api/vtex-ofertas.js`: ofertas por rubro.

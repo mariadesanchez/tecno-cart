@@ -10,12 +10,34 @@ const TIENDAS = {
   samsung:  { nombre: 'Samsung',  host: 'https://shop.samsung.com/ar' },
   motorola: { nombre: 'Motorola', host: 'https://www.motorola.com.ar' },
   rodo:     { nombre: 'Rodó',     host: 'https://www.rodo.com.ar', magento: true },
+  ipoint:   { nombre: 'iPoint',   host: 'https://ipoint.com.ar', prestashop: true },
+  macstation: { nombre: 'MacStation', host: 'https://www.macstation.com.ar', odoo: true },
 };
 const magento = require('../lib/magento.js');
+const otras = require('../lib/otras.js');
+
+// Productos Apple: los nombres no traen un modelo ("iPhone 17 Pro 256GB Negro"), así que se reconocen por
+// familia + variante + capacidad (sin el color, que no cambia el precio). Los accesorios quedan afuera.
+function claveApple(nombre) {
+  const n = String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  if (/FUNDA|CASE|CABLE|CARGADOR|ADAPTADOR|VIDRIO|PROTECTOR|FILM|SOPORTE|CORREA|MALLA|PENCIL|TECLADO|MOUSE|BATERIA|ESTUCHE|LAMINA|CRISTAL/.test(n)) return '';
+  const cap = [...n.matchAll(/(\d+)\s*(GB|TB)\b/g)].map(m => +m[1] * (m[2] === 'TB' ? 1024 : 1)).sort((a, b) => b - a)[0];
+  let m;
+  if ((m = /IPHONE\s*(\d{1,2})\s*(E\b)?/.exec(n))) {
+    const v = ['PRO', 'MAX', 'PLUS', 'MINI', 'AIR'].filter(x => new RegExp('\\b' + x + '\\b').test(n)).join(' ');
+    return cap ? ('APPLE IPHONE ' + m[1] + (m[2] ? 'E' : '') + (v ? ' ' + v : '') + ' ' + cap + 'GB') : '';
+  }
+  if ((m = /AIRPODS\s*(PRO|MAX)?\s*(\d)?/.exec(n))) return 'APPLE AIRPODS' + (m[1] ? ' ' + m[1] : '') + (m[2] ? ' ' + m[2] : '');
+  return '';
+}
 
 // Modelo del producto: palabras con letras y números (HDR370F50B, SM-A165M, 55UT8000), sin medidas ni capacidades
 const MEDIDA = /^\d+(?:[.,]\d+)?(GB|TB|MB|MAH|W|HZ|LT|L|KG|CM|MM|MP|FPS|V|BTU|FRIGORIAS|PULG|P)$/;
 function modelos(nombre) {
+  const a = claveApple(nombre);
+  return new Set((a ? [a] : []).concat([...modelosSin(nombre)]));
+}
+function modelosSin(nombre) {
   return new Set(String(nombre || '').toUpperCase().replace(/[^A-Z0-9\-\/ ]/g, ' ').split(/[\s\/]+/)
     .map(t => t.replace(/^-+|-+$/g, ''))
     .filter(t => t.length >= 5 && /[A-Z]/.test(t) && /\d/.test(t) && !MEDIDA.test(t) && !/^\dG$/.test(t)));
@@ -185,12 +207,18 @@ async function handler(req, res) {
     if (tienda.magento) {
       productos = await magento.buscar(tienda.host, { q, limite });
       buscadoPor = 'nombre';
+    } else if (tienda.prestashop) {
+      productos = await otras.prestashop(tienda.host, { ean, q, limite });
+      buscadoPor = productos.some(p => p.exacto) ? 'codigo' : 'nombre';
+    } else if (tienda.odoo) {
+      productos = await otras.odoo(tienda.host, { q, limite });
+      buscadoPor = 'nombre';
     }
-    else if (ean) {
+    else if (ean && !tienda.prestashop && !tienda.odoo) {
       productos = mapear(await buscar(tienda.host, 'fq=alternateIds_Ean:' + encodeURIComponent(ean)), ean);
       buscadoPor = 'codigo';
     }
-    if (!tienda.magento && !productos.length && q) {
+    if (!tienda.magento && !tienda.prestashop && !tienda.odoo && !productos.length && q) {
       productos = mapear(await buscar(tienda.host, `ft=${encodeURIComponent(q)}&_from=0&_to=${limite - 1}`), ean);
       buscadoPor = 'nombre';
     }

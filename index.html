@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tecno Cart">
 <meta name="application-name" content="Tecno Cart">
-<meta name="description" content="Todas las ofertas de cada tienda, comparación de precios de tecnología, celulares y electrodomésticos entre 6 tiendas y tus listas con el mail diario de precios.">
+<meta name="description" content="Todas las ofertas de cada tienda, comparación de precios de tecnología, celulares y electrodomésticos entre 8 tiendas y tus listas con el mail diario de precios.">
 <title>Tecno Cart</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async></script>
@@ -729,7 +729,7 @@
 </style>
 </head>
 <body class="gated">
-<div class="ticker" aria-hidden="true" data-view="inicio"><div class="run"><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Rodó, Samsung y Motorola</span><span>📧 Tu lista con los precios de hoy, en tu mail</span><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Rodó, Samsung y Motorola</span><span>📧 Tu lista con los precios de hoy, en tu mail</span></div></div>
+<div class="ticker" aria-hidden="true" data-view="inicio"><div class="run"><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span></div></div>
 <header class="hero" id="hero" data-view="inicio">
   <div class="hero-in">
     <div class="brand"><span class="badge" id="netBadge" hidden>Sin conexión</span></div>
@@ -914,7 +914,7 @@
 
   <section class="card" id="prodCard" data-view="inicio">
     <h2><span id="prodTitle">Buscá un producto</span></h2>
-    <div class="hint" style="margin-top:-6px">Escribí el nombre, el modelo o el código de barras: buscamos en las 6 tiendas a la vez.</div>
+    <div class="hint" style="margin-top:-6px">Escribí el nombre, el modelo o el código de barras: buscamos en las 8 tiendas a la vez.</div>
     <div class="seg" id="superSel" role="tablist" aria-label="Tienda" style="margin-top:12px" hidden>
       <button type="button" role="tab" data-super="naldo">Naldo</button>
       <button type="button" role="tab" data-super="cetrogar">Cetrogar</button>
@@ -922,6 +922,8 @@
       <button type="button" role="tab" data-super="samsung">Samsung</button>
       <button type="button" role="tab" data-super="motorola">Motorola</button>
       <button type="button" role="tab" data-super="rodo">Rodó</button>
+      <button type="button" role="tab" data-super="ipoint">iPoint</button>
+      <button type="button" role="tab" data-super="macstation">MacStation</button>
     </div>
     <div class="hint" style="margin:-4px 0 8px" hidden>Buscando en <b id="cotoSuc"></b></div>
     <form id="cotoForm" class="row" autocomplete="off">
@@ -1020,6 +1022,8 @@
           <label><input type="checkbox" value="samsung"><span>Samsung</span></label>
           <label><input type="checkbox" value="motorola"><span>Motorola</span></label>
           <label><input type="checkbox" value="rodo"><span>Rodó</span></label>
+          <label><input type="checkbox" value="ipoint"><span>iPoint</span></label>
+          <label><input type="checkbox" value="macstation"><span>MacStation</span></label>
         </div>
         <p class="hint" id="supersTxt" style="margin:6px 0 0"></p>
       </div>
@@ -1362,10 +1366,10 @@
   const nomT = k => SUPERS[k] || OTRAS_TIENDAS[k] || k;
   const superKey = () => Object.fromEntries(Object.entries({ ...OTRAS_TIENDAS, ...SUPERS }).map(([k, v]) => [v, k]));
   // Estas tiendas no aceptan un carrito armado desde otra página: se muestran los productos con su enlace
-  const SIN_CARRO = { rodo: 1, samsung: 1, motorola: 1 };
+  const SIN_CARRO = { rodo: 1, samsung: 1, motorola: 1, ipoint: 1, macstation: 1 };
   // Cargan el carrito pero después muestran su portada: hay que tocar Carrito
   const VA_A_PORTADA = {};
-  const TIENDA_HOST = { naldo: 'https://www.naldo.com.ar', cetrogar: 'https://www.cetrogar.com.ar', oncity: 'https://www.oncity.com', samsung: 'https://shop.samsung.com/ar', motorola: 'https://www.motorola.com.ar', rodo: 'https://www.rodo.com.ar' };
+  const TIENDA_HOST = { naldo: 'https://www.naldo.com.ar', cetrogar: 'https://www.cetrogar.com.ar', oncity: 'https://www.oncity.com', samsung: 'https://shop.samsung.com/ar', motorola: 'https://www.motorola.com.ar', rodo: 'https://www.rodo.com.ar', ipoint: 'https://ipoint.com.ar', macstation: 'https://www.macstation.com.ar' };
   function renderBuy(groups){
     const bx = $('buyBox'); bx.innerHTML = '';
     const SUPER_KEY = superKey();
@@ -1397,7 +1401,7 @@
     d.innerHTML = '<b></b>'; d.querySelector('b').textContent = titulo;
     items.forEach(it => {
       const a = document.createElement('a'); a.target = '_blank'; a.rel = 'noopener';
-      a.href = it.link || (TIENDA_HOST[k] + '/' + (k === 'rodo' ? 'catalogsearch/result/?q=' : '') + encodeURIComponent(it.ean || it.name) + (k === 'rodo' ? '' : '?_q=' + encodeURIComponent(it.ean || it.name) + '&map=ft'));
+      a.href = it.link || (TIENDA_HOST[k] + '/' + (k === 'rodo' ? 'catalogsearch/result/?q=' : k === 'ipoint' ? 'busqueda?s=' : k === 'macstation' ? 'shop?search=' : '') + encodeURIComponent(it.ean || it.name) + (k === 'rodo' || k === 'ipoint' || k === 'macstation' ? '' : '?_q=' + encodeURIComponent(it.ean || it.name) + '&map=ft'));
       a.innerHTML = '<span></span><span></span>';
       a.children[0].textContent = fmtQ(Math.max(1, Math.ceil(it.qty))) + ' × ' + it.name; a.children[1].textContent = 'Abrir ›';
       d.appendChild(a);
@@ -1533,7 +1537,7 @@
 
   // ---------- ajustes ----------
   let cfg = Object.assign({ suc: '200', auto: true, super: 'farmaonline' }, store.get('super-ajustes', {}));
-  const SUPERS = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó' };
+  const SUPERS = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation' };
   if (!SUPERS[cfg.super]) cfg.super = 'farmaonline';
   function showCfg(){
     $('cfgSuc').value = cfg.suc || '200';
@@ -1689,7 +1693,24 @@
   let sGroups = [], sReq = 0;
   // Modelo del producto (HDR370F50B, SM-A165M): sirve para reconocer el mismo producto en tiendas que no publican el código de barras
   const MEDIDA_M = /^\d+(?:[.,]\d+)?(GB|TB|MB|MAH|W|HZ|LT|L|KG|CM|MM|MP|FPS|V|BTU|FRIGORIAS|PULG|P)$/;
+  // Productos Apple: familia + variante + capacidad, sin el color (igual que en el servidor)
+  function claveApple(nombre){
+    const n = String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    if (/FUNDA|CASE|CABLE|CARGADOR|ADAPTADOR|VIDRIO|PROTECTOR|FILM|SOPORTE|CORREA|MALLA|PENCIL|TECLADO|MOUSE|BATERIA|ESTUCHE|LAMINA|CRISTAL/.test(n)) return '';
+    const cap = [...n.matchAll(/(\d+)\s*(GB|TB)\b/g)].map(m => +m[1] * (m[2] === 'TB' ? 1024 : 1)).sort((a, b) => b - a)[0];
+    let m;
+    if ((m = /IPHONE\s*(\d{1,2})\s*(E\b)?/.exec(n))) {
+      const v = ['PRO', 'MAX', 'PLUS', 'MINI', 'AIR'].filter(x => new RegExp('\\b' + x + '\\b').test(n)).join(' ');
+      return cap ? ('APPLE IPHONE ' + m[1] + (m[2] ? 'E' : '') + (v ? ' ' + v : '') + ' ' + cap + 'GB') : '';
+    }
+    if ((m = /AIRPODS\s*(PRO|MAX)?\s*(\d)?/.exec(n))) return 'APPLE AIRPODS' + (m[1] ? ' ' + m[1] : '') + (m[2] ? ' ' + m[2] : '');
+    return '';
+  }
   function modelosDe(nombre){
+    const a = claveApple(nombre);
+    return (a ? [a] : []).concat(modelosSinApple(nombre));
+  }
+  function modelosSinApple(nombre){
     return String(nombre || '').toUpperCase().replace(/[^A-Z0-9\-\/ ]/g, ' ').split(/[\s\/]+/).map(t => t.replace(/^-+|-+$/g, ''))
       .filter(t => t.length >= 5 && /[A-Z]/.test(t) && /\d/.test(t) && !MEDIDA_M.test(t) && !/^\dG$/.test(t));
   }
@@ -1949,7 +1970,7 @@
   const lleva = p => { const m = /llevando\s*(\d+)/i.exec(p.promo || ''); return m ? +m[1] : 1; };
   const effPrice = p => p.precio_promo || p.precio;
   // Rodó no publica códigos de barras: se busca por el nombre y se reconoce el producto por el modelo
-  const POR_NOMBRE = { rodo: 1 };
+  const POR_NOMBRE = { rodo: 1, macstation: 1 };
   async function compareAll(ean, nombre){
     const my = ++cmpReq;
     cmpState = { ean, res: {} };
@@ -2409,7 +2430,7 @@
   }
 
   let planTienda = null;
-  const COLOR_TIENDA = { coto: '#E30613', carrefour: '#1E4B9B', dia: '#E2001A', changomas: '#00A651', jumbo: '#2E9E44', vea: '#D7182A', disco: '#C8102E', naldo: '#E30613', cetrogar: '#0047BB', oncity: '#F15A22', samsung: '#1428A0', motorola: '#001428', rodo: '#D52B1E' };
+  const COLOR_TIENDA = { coto: '#E30613', carrefour: '#1E4B9B', dia: '#E2001A', changomas: '#00A651', jumbo: '#2E9E44', vea: '#D7182A', disco: '#C8102E', naldo: '#E30613', cetrogar: '#0047BB', oncity: '#F15A22', samsung: '#1428A0', motorola: '#001428', rodo: '#D52B1E', ipoint: '#1D1D1F', macstation: '#0071E3' };
   const OTRA_APP = { url: 'https://compras-super-cart.vercel.app', nombre: 'Super Cart', lugar: 'el súper', titulo: 'Más barato en el súper' };
   const paraCruce = it => true;
   // Cruce con la otra app: productos de esta lista que hoy salen más baratos en las tiendas de la otra
@@ -3816,7 +3837,7 @@
 
   // ---------- cuenta de Google (Supabase) ----------
   let sb = null, user = null, perfil = null, sessionUid = null, esAdmin = false, tieneSupers = true;
-  const SUPERS_MAIL = ['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo'];
+  const SUPERS_MAIL = ['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation'];
   async function initSupabase(){
     try {
       const c = await (await fetch('/api/config')).json();
@@ -4162,7 +4183,7 @@
     const sup = Array.isArray(p.supers) && p.supers.length ? p.supers : SUPERS_MAIL;
     $('supersBox').hidden = (p.modo || 'resumen') !== 'resumen';
     document.querySelectorAll('#supersSel input').forEach(c => { c.checked = sup.includes(c.value); c.disabled = c.checked && sup.length === 1; });
-    const nom = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó' };
+    const nom = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation' };
     $('supersTxt').textContent = sup.length > 1 ? `Te llega un solo mail comparando ${sup.map(s => nom[s]).join(', ').replace(/, ([^,]*)$/, ' y $1')}: el total de tu lista en cada uno y el precio de cada producto, con el más barato marcado.` : `Te llegan los precios de ${nom[sup[0]]}, con las ofertas arriba.`;
     const g = store.get('sale-guardado', 0), n = lists.reduce((s, l) => s + l.items.length, 0);
     $('syncState').textContent = `${lists.length} ${lists.length === 1 ? 'lista' : 'listas'} con ${n} productos guardadas en tu cuenta`

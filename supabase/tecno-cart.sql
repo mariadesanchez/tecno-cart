@@ -146,3 +146,9 @@ grant execute on function public.tecno_destinatarios() to service_role;
 -- Listas compartidas: aceptar también las de Tecno Cart
 alter table public.listas_compartidas drop constraint if exists listas_compartidas_app_check;
 alter table public.listas_compartidas add constraint listas_compartidas_app_check check (app in ('super', 'perfu', 'tecno'));
+
+-- Tiendas Apple (iPoint y MacStation): se suman a las que se pueden elegir para el mail
+alter table public.tecno_perfiles drop constraint if exists tecno_supers_validos;
+alter table public.tecno_perfiles add constraint tecno_supers_validos check (cardinality(supers) > 0 and supers <@ array['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation']);
+alter table public.tecno_perfiles alter column supers set default array['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation'];
+update public.tecno_perfiles set supers = supers || array['ipoint', 'macstation'] where not (supers @> array['ipoint']);
