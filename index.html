@@ -1886,7 +1886,7 @@
     return b;
   }
   function addToMyList(pr, k){
-    const l = ensureList(), cur = pr.ean && l.items.find(i => i.ean === pr.ean);
+    const l = ensureList(), cur = l.items.find(i => (pr.ean && i.ean === pr.ean) || (!pr.ean && pr.link && i.link === pr.link));   // sin código (MacStation, Rodó…): por el link
     if (cur) { l.items = l.items.filter(i => i !== cur); toast('Lo sacaste de ' + l.name); }
     else {
       const of = !!(pr.precio_promo && !pr.sin_stock), n = of ? lleva(pr) : 1;
@@ -1900,7 +1900,7 @@
     saveLists(); renderLists(); if (view === 'listas') renderBuilder();
   }
   function searchCard(g){
-    const b = mejorDe(g), l = ensureList(), codigoG = g.ean || modeloDe(g.nombre) || [...g.mods][0] || '', inList = codigoG && l.items.find(i => i.ean === codigoG);
+    const b = mejorDe(g), l = ensureList(), codigoG = g.ean || modeloDe(g.nombre) || [...g.mods][0] || '', inList = l.items.find(i => (codigoG && i.ean === codigoG) || (!codigoG && b.p.link && i.link === b.p.link));
     const el = document.createElement('div'); el.className = 'scard';
     el.innerHTML = `<img alt="" loading="lazy"><div style="min-width:0"><div class="sn"></div><div class="sb"></div>
       <div class="sbest"><b>${fmt(b.v)}</b> en <span class="st"></span></div><div class="sstores"></div></div>
