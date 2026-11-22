@@ -765,6 +765,7 @@
   .mv-new{display:flex;gap:6px;padding:8px 4px 2px;border-top:1px solid #F2ECF5}
   .mv-new input{flex:1;min-width:0;border:1.5px solid #E6DDF0;border-radius:10px;padding:7px 9px;font:inherit;font-size:13px}
   .cmp-viejo{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#F6F3FC;font-size:13px;color:var(--muted)}
+  .cmp-viejo.vieja{background:#FFF4E0;color:#8A5A00}
   .cmp-viejo button{appearance:none;border:0;border-radius:10px;padding:7px 12px;font:inherit;font-size:13px;font-weight:800;color:#7B2FF7;background:#EDE3FF;cursor:pointer}
   /* Links a la tienda en la lista y en la comparación: morado al pasar el mouse */
   a.it-link{color:inherit;text-decoration:none;cursor:pointer}
@@ -2566,7 +2567,7 @@
   }
 
   // ---------- La comparación queda guardada: al volver a la lista (o a la app) no hay que comparar de nuevo ----------
-  var CMP_KEY = 'comparaciones', CMP_VIGENCIA = 12 * 3600e3;   // var: renderBuilder puede correr antes de esta línea al arrancar
+  var CMP_KEY = 'comparaciones', CMP_VIGENCIA = 7 * 24 * 3600e3;   // se guarda una semana; el usuario decide si vuelve a comparar   // var: renderBuilder puede correr antes de esta línea al arrancar
   function guardarComparacion(l, res){
     try {
       const all = store.get(CMP_KEY, {}) || {};
@@ -2609,7 +2610,13 @@
     const min = Math.max(0, Math.round((Date.now() - t) / 60000));
     const d = document.createElement('div'); d.className = 'cmp-viejo';
     d.innerHTML = '<span></span><button type="button">Comparar de nuevo</button>';
-    d.querySelector('span').textContent = '🕒 Comparación ' + (min < 1 ? 'de recién' : min < 60 ? 'de hace ' + min + ' min' : 'de hace ' + Math.round(min / 60) + ' h') + (min >= 60 ? ': los precios pueden haber cambiado.' : '.');
+    // "Última comparación: hoy 18:40 (hace 25 min)" / "ayer 21:10" / "lun 17/11 09:30"
+    const f = new Date(t), hoy = new Date(), ayer = new Date(Date.now() - 864e5);
+    const dos = n => String(n).padStart(2, '0'), hora = dos(f.getHours()) + ':' + dos(f.getMinutes());
+    const dia = f.toDateString() === hoy.toDateString() ? 'hoy' : f.toDateString() === ayer.toDateString() ? 'ayer' : ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'][f.getDay()] + ' ' + dos(f.getDate()) + '/' + dos(f.getMonth() + 1);
+    const hace = min < 1 ? 'recién' : min < 60 ? 'hace ' + min + ' min' : min < 48 * 60 ? 'hace ' + Math.round(min / 60) + ' h' : 'hace ' + Math.round(min / 1440) + ' días';
+    d.querySelector('span').textContent = '🕒 Última comparación: ' + dia + ' ' + hora + ' (' + hace + ')' + (min >= 12 * 60 ? '. Los precios pueden haber cambiado.' : '');
+    if (min >= 12 * 60) d.classList.add('vieja');
     d.querySelector('button').addEventListener('click', () => runList(l, box));
     box.prepend(d);
   }
