@@ -1742,7 +1742,7 @@
   }
   function modelosSinApple(nombre){
     return String(nombre || '').toUpperCase().replace(/[^A-Z0-9\-\/ ]/g, ' ').split(/[\s\/]+/).map(t => t.replace(/^-+|-+$/g, ''))
-      .filter(t => t.length >= 5 && /[A-Z]/.test(t) && /\d/.test(t) && !MEDIDA_M.test(t) && !/^\dG$/.test(t));
+      .filter(t => t.length >= 5 && /[A-Z]/.test(t) && /\d/.test(t) && !MEDIDA_M.test(t) && !/^\dG$/.test(t) && !/SELLERPROD/.test(t));
   }
   const modeloDe = nombre => modelosDe(nombre).sort((a, b) => b.length - a.length)[0] || '';
   const esEan = c => /^\d{8,14}$/.test(String(c || ''));

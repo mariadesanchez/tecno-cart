@@ -14,6 +14,7 @@ const TIENDAS = {
   ipoint:   { nombre: 'iPoint',   host: 'https://ipoint.com.ar', prestashop: true },
   macstation: { nombre: 'MacStation', host: 'https://www.macstation.com.ar', odoo: true },
 };
+const rel = require('../lib/relevancia');
 const magento = require('../lib/magento.js');
 const otras = require('../lib/otras.js');
 
@@ -185,7 +186,7 @@ function mapear(products, ean) {
       sin_stock: sinStock,
       rubro: rubroVtex(p),
       link: p.link || '',
-      modelo: String(p.productReference || ''),
+      modelo: rel.modeloLimpio(p.productReference),
       sku: String(item.itemId || ''),
       seller: String((seller && seller.sellerId) || '1'),
     });
@@ -239,6 +240,8 @@ async function handler(req, res) {
     }
     if ((ean || buscaModelo) && q) marcarPorModelo(productos, q);
     if (buscadoPor === 'nombre' && productos.some(p => p.por_modelo)) buscadoPor = 'modelo';
+    // Búsqueda por nombre: se sacan los resultados que no tienen que ver (iMacs al buscar "horno eléctrico")
+    if (!ean && !buscaModelo && !productos.some(p => p.exacto)) productos = rel.relevantes(productos, q);
     productos.sort((a, b) => (Number(b.exacto) - Number(a.exacto)) || (Number(a.sin_stock) - Number(b.sin_stock)));
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
     res.statusCode = 200;
