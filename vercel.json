@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "functions": {
+    "api/vtex-ofertas.js": {
+      "maxDuration": 30
+    }
+  }
+}

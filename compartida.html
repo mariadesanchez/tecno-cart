@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FF2E7E">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="Te compartieron una lista de compras">
+<meta property="og:description" content="Mirá la lista con sus precios y guardala en tu app para comparar en todas las tiendas.">
+<title>Lista compartida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFF5F9; --card:#fff; --ink:#1B2140; --muted:#6C6880; --line:#F6DCE7;
+    --pink:#FF2E7E; --pink-deep:#C40F52; --tag:#FFF01F; --tag-deep:#D6C800; --mint:#5FE3B0; --mint-ink:#0B3B2A;
+    --accent:#1E9BFF; --accent-deep:#0B6FC4; --hot:#F01F6E; --ok:#14935A; --warn:#A35F00;
+    --display:"Bricolage Grotesque","Figtree",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Figtree",system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .top{background:var(--pink);color:#fff;padding:22px 18px 46px;border-radius:0 0 28px 28px}
+  .wrap{max-width:620px;margin:0 auto}
+  .logo{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.01em}
+  .logo span{background:var(--tag);color:var(--ink);padding:0 9px;border-radius:9px;margin-left:4px}
+  .perfu .logo span{background:var(--mint);color:var(--mint-ink)}
+  .tecno .logo span{background:#9B7BFF;color:#fff}
+  .who{margin-top:6px;font-size:15px;opacity:.95}
+  .card{background:var(--card);border-radius:20px;padding:18px;margin:-30px 12px 16px;box-shadow:0 1px 0 rgba(27,33,64,.04),0 10px 24px -14px rgba(27,33,64,.35)}
+  .lt small{display:block;color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .lt b{display:block;font-family:var(--display);font-size:26px;line-height:1.15}
+  .when{color:var(--muted);font-size:14px;margin-top:4px}
+  .sum{margin:14px 0 6px;border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .sum .t{font-family:var(--display);font-size:26px;font-weight:800}
+  .sum small{display:block;color:var(--muted);font-size:13px}
+  .x{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 4px}
+  .x div{background:var(--bg);border-radius:12px;padding:8px 10px;font-size:13px;color:var(--muted)}
+  .x b{display:block;color:var(--ink);font-size:16px}
+  .x .sv b{color:var(--ok)}
+  h3{font-size:15px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 4px}
+  h3 em{color:var(--muted);font-style:normal;font-weight:600;font-size:13px;letter-spacing:0}
+  ul{list-style:none;margin:0;padding:0}
+  li{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line)}
+  li img,.ph{width:58px;height:58px;flex:none;border-radius:12px;border:1px solid var(--line);object-fit:contain;background:#fff}
+  .nm{font-size:16px}
+  .pr{font-size:15px;margin-top:2px}
+  .pr em{color:var(--hot);font-style:normal}
+  .pr s{color:var(--muted);font-size:13px}
+  .nop{color:var(--warn);font-size:14px}
+  .acts{display:grid;gap:10px;margin-top:18px}
+  .btn{appearance:none;border:0;border-radius:14px;padding:15px 16px;font:inherit;font-weight:800;font-size:16px;cursor:pointer;text-align:center;text-decoration:none;display:block}
+  .b1{background:var(--accent);color:#fff;box-shadow:0 5px 0 var(--accent-deep)}
+  .b2{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+  .msg{text-align:center;padding:40px 10px;color:var(--muted)}
+  .foot{text-align:center;color:var(--muted);font-size:13px;margin:0 0 30px}
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#1A0F17;--card:#251722;--ink:#FFF0F6;--muted:#C7A9BA;--line:#3E2434;--pink:#D81F68;--accent:#4DB2FF}
+    .b2{background:var(--card)} li img,.ph{background:#fff}
+  }
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><div class="logo" id="logo">Super<span>Cart</span></div><div class="who" id="who">Te compartieron una lista</div></div></div>
+<div class="wrap">
+  <div class="card" id="card"><div class="msg" id="msg">Cargando la lista…</div><div id="lista" hidden></div></div>
+  <p class="foot" id="foot"></p>
+</div>
+<script>
+(function(){
+  const APPS = {
+    super: { nombre: 'Super Cart', url: 'https://compras-super-cart.vercel.app', marca: 'Super', donde: 'todos los súper' },
+    perfu: { nombre: 'Perfu Cart', url: 'https://perfu-cart.vercel.app', marca: 'Perfu', donde: 'todas las farmacias y perfumerías' },
+    tecno: { nombre: 'Tecno Cart', url: 'https://tecno-cart.vercel.app', marca: 'Tecno', donde: 'todas las tiendas de tecnología y electro' },
+  };
+  const $ = id => document.getElementById(id);
+  const fmt = n => '$ ' + (Math.round(n * 100) / 100).toLocaleString('es-AR', { minimumFractionDigits: (Math.round(n * 100) % 100) ? 2 : 0, maximumFractionDigits: 2 });
+  const fmtQ = q => String(Math.round(q * 100) / 100).replace('.', ',');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const encEan = ean => parseInt('1' + ean, 10).toString(36);
+  const error = t => { $('msg').textContent = t; };
+  const id = new URLSearchParams(location.search).get('id') || '';
+  if (!/^[a-z0-9]{8,32}$/.test(id)) return error('El link de la lista no es válido.');
+
+  fetch('/api/config').then(r => r.json()).then(c =>
+    fetch(c.url.replace(/\/+$/, '') + '/rest/v1/rpc/lista_compartida', { method: 'POST', headers: { apikey: c.anon, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_id: id }) })
+  ).then(r => r.ok ? r.json() : null).then(row => {
+    if (!row || !row.datos) return error('Esta lista ya no está disponible.');
+    pintar(row.app, row.datos);
+  }).catch(() => error('No se pudo cargar la lista. Revisá tu conexión y probá de nuevo.'));
+
+  function pintar(appKey, d){
+    const A = APPS[appKey] || APPS.super;
+    if (appKey === 'perfu') document.body.classList.add('perfu');
+    if (appKey === 'tecno') document.body.classList.add('tecno');
+    $('logo').innerHTML = esc(A.marca) + '<span>Cart</span>';
+    document.title = (d.nombre || 'Lista') + ' · ' + A.nombre;
+    $('who').textContent = (d.de ? d.de + ' te compartió' : 'Te compartieron') + ' una lista de ' + A.nombre;
+    const items = Array.isArray(d.items) ? d.items : [];
+    const fecha = d.fecha ? new Date(d.fecha).toLocaleDateString('es-AR') : '';
+    let total = 0, regular = 0, units = 0, priced = 0;
+    items.forEach(i => { units += i.q; if (i.u) { total += i.u * i.q; regular += Math.max(i.r || i.u, i.u) * i.q; priced++; } });
+    const saved = Math.max(0, regular - total);
+    // Agrupados por tienda, como en la app
+    const grupos = new Map();
+    items.forEach(i => { const k = i.t || ''; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(i); });
+    let h = '<div class="lt"><small>Lista</small><b>' + esc(d.nombre || 'Mi lista') + '</b></div>'
+      + '<div class="when">' + (d.tienda ? 'Precios de ' + esc(d.tienda) + (fecha ? ' del ' + fecha : '') : (fecha ? 'Compartida el ' + fecha : '')) + '</div>'
+      + '<div class="sum"><div>' + items.length + (items.length === 1 ? ' producto' : ' productos') + ', ' + fmtQ(units) + (units === 1 ? ' unidad' : ' unidades')
+      + '<small>' + (items.length - priced ? (items.length - priced) + ' sin precio: no suman al total' : 'Total con los precios de la lista') + '</small></div><div class="t">' + fmt(total) + '</div></div>'
+      + (total ? '<div class="x"><div>Sin ofertas<b>' + fmt(regular) + '</b></div><div>Con ofertas<b>' + fmt(total) + '</b></div><div class="sv">Ahorrás<b>' + fmt(saved) + '</b></div></div>' : '');
+    grupos.forEach((arr, k) => {
+      h += '<h3>' + esc(k || 'Productos') + ' <em>(' + arr.length + ')</em></h3><ul>';
+      arr.forEach(i => {
+        const img = i.img ? '<img src="' + esc(i.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement(\'div\'),{className:\'ph\'}))">' : '<div class="ph"></div>';
+        const nombre = i.link ? '<a href="' + esc(i.link) + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">' + esc(i.n) + '</a>' : esc(i.n);
+        const pr = i.u
+          ? fmtQ(i.q) + ' × ' + (i.p ? '<em>' + fmt(i.u) + ' (' + esc(i.p) + ')</em>' : fmt(i.u)) + (i.r && i.r > i.u ? ' <s>' + fmt(i.r) + '</s>' : '') + ' = <b>' + fmt(i.u * i.q) + '</b>'
+          : '<span class="nop">' + fmtQ(i.q) + ' × sin precio' + (i.st ? ' · ' + esc(i.st) : '') + '</span>';
+        h += '<li>' + img + '<div><div class="nm">' + nombre + '</div><div class="pr">' + pr + '</div></div></li>';
+      });
+      h += '</ul>';
+    });
+    const conCodigo = items.filter(i => /^\d{8,14}$/.test(i.e || ''));
+    const nombreLink = String(d.nombre || 'Lista compartida').trim().replace(/[~.]/g, ' ').replace(/\s+/g, '_');
+    const guardar = A.url + '/?l=' + encodeURIComponent(nombreLink).replace(/%5F/gi, '_') + '~' + conCodigo.map(i => encEan(i.e) + (i.q > 1 ? '-' + Math.round(i.q) : '')).join('.');
+    h += '<div class="acts">'
+      + (conCodigo.length ? '<a class="btn b1" href="' + esc(guardar) + '">Guardar esta lista en ' + esc(A.nombre) + '</a>' : '')
+      + '<a class="btn b2" href="' + esc(A.url) + '">Conocé ' + esc(A.nombre) + ': compara precios en ' + esc(A.donde) + '</a></div>';
+    $('lista').innerHTML = h; $('lista').hidden = false; $('msg').hidden = true;
+    $('foot').textContent = 'Los precios son los que tenía la lista al compartirla. En la app ves los de hoy.';
+  }
+})();
+</script>
+</body>
+</html>
