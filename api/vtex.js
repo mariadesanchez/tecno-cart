@@ -18,14 +18,15 @@ const otras = require('../lib/otras.js');
 
 // Productos Apple: los nombres no traen un modelo ("iPhone 17 Pro 256GB Negro"), así que se reconocen por
 // familia + variante + capacidad (sin el color, que no cambia el precio). Los accesorios quedan afuera.
-function claveApple(nombre) {
+function claveApple(nombre, sinCapacidad) {
   const n = String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
   if (/FUNDA|CASE|CABLE|CARGADOR|ADAPTADOR|VIDRIO|PROTECTOR|FILM|SOPORTE|CORREA|MALLA|PENCIL|TECLADO|MOUSE|BATERIA|ESTUCHE|LAMINA|CRISTAL/.test(n)) return '';
   const cap = [...n.matchAll(/(\d+)\s*(GB|TB)\b/g)].map(m => +m[1] * (m[2] === 'TB' ? 1024 : 1)).sort((a, b) => b - a)[0];
   let m;
   if ((m = /IPHONE\s*(\d{1,2})\s*(E\b)?/.exec(n))) {
     const v = ['PRO', 'MAX', 'PLUS', 'MINI', 'AIR'].filter(x => new RegExp('\\b' + x + '\\b').test(n)).join(' ');
-    return cap ? ('APPLE IPHONE ' + m[1] + (m[2] ? 'E' : '') + (v ? ' ' + v : '') + ' ' + cap + 'GB') : '';
+    const base = 'APPLE IPHONE ' + m[1] + (m[2] ? 'E' : '') + (v ? ' ' + v : '');
+    return cap ? base + ' ' + cap + 'GB' : (sinCapacidad ? base : '');
   }
   if ((m = /AIRPODS\s*(PRO|MAX)?\s*(\d)?/.exec(n))) return 'APPLE AIRPODS' + (m[1] ? ' ' + m[1] : '') + (m[2] ? ' ' + m[2] : '');
   return '';
@@ -47,7 +48,13 @@ function marcarPorModelo(productos, q) {
   const buscado = modelos(q);
   if (!buscado.size || productos.some(p => p.exacto)) return productos;
   const p = productos.find(x => [...modelos(x.nombre)].some(m => buscado.has(m) || buscado.has(m.replace(/-/g, ''))));
-  if (p) { p.exacto = true; p.por_modelo = true; }
+  if (p) { p.exacto = true; p.por_modelo = true; return productos; }
+  // Tiendas que publican el iPhone sin la capacidad (MacStation: "iPhone 17", con el precio de la versión más chica)
+  const base = claveApple(q, true).replace(/ \d+GB$/, '');
+  if (base) {
+    const b = productos.find(x => !/\d+\s*(GB|TB)/i.test(x.nombre) && claveApple(x.nombre, true) === base);
+    if (b) { b.exacto = true; b.por_modelo = true; b.nota = ['Precio desde (la versión de menor capacidad)', b.nota].filter(Boolean).join('. '); }
+  }
   return productos;
 }
 
