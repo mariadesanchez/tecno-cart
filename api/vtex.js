@@ -284,9 +284,12 @@ async function handler(req, res) {
     // Búsqueda por nombre: se sacan los resultados que no tienen que ver (iMacs al buscar "horno eléctrico")
     if (!ean && !buscaModelo && !productos.some(p => p.exacto)) productos = rel.relevantes(productos, q);
     if (medQ.length) productos = rel.conMedidas(productos, medQ).slice(0, limitePedido);
+    // Sin repetidos: algunas tiendas devuelven el mismo producto dos veces
+    { const vistos = new Set(); productos = productos.filter(p => { const k = p.link || p.sku || p.nombre; if (vistos.has(k)) return false; vistos.add(k); return true; }); }
     productos.forEach(p => { delete p.medidas; delete p.categorias; });
     productos.sort((a, b) => (Number(b.exacto) - Number(a.exacto)) || (Number(a.sin_stock) - Number(b.sin_stock)));
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+    res.setHeader('X-Version', 'busqueda-4');
     res.statusCode = 200;
     return res.end(JSON.stringify(Object.assign({ ok: true, super: tienda.nombre, buscado_por: buscadoPor, total: productos.length, productos }, tienda.web ? { fuente: webFallo ? 'catalogo' : 'web', aviso: webFallo || undefined } : {})));
   } catch (err) {
