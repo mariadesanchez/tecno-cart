@@ -557,9 +557,9 @@
   .ln-sec.tach{color:var(--danger);background:color-mix(in srgb, var(--danger) 10%, var(--card));border:1.5px solid color-mix(in srgb, var(--danger) 35%, transparent);border-radius:10px;padding:6px 10px;margin-top:12px;display:inline-block}
   .opt .ln .lnq{grid-area:s;font-size:13px;color:var(--muted);font-weight:600}
   .ln-cmp{grid-area:c;font-size:12px;color:var(--muted);line-height:1.35;margin-top:1px}
-  .ln-cmp span{white-space:nowrap}
-  .ln-cmp span.caro{font-weight:700;color:var(--ink)}
-  .ln-cmp span.mejor,.opt .ln .lnp.mejor{font-weight:800;color:#14935A}
+  .ln-cmp span,.ln-cmp a{white-space:nowrap}
+  .ln-cmp span.caro,.ln-cmp a.caro{font-weight:700;color:var(--ink)}
+  .ln-cmp a.mejor,.ln-cmp span.mejor,.opt .ln .lnp.mejor{font-weight:800;color:#14935A}
   .opt .grp .ln .lnn{font-weight:700}
   .ln-sec{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:12px 0 2px;padding-top:10px;border-top:1px dashed var(--line)}
   .ln-sec.on{color:var(--price-hot);border-top:0;padding-top:0;margin-top:8px}
@@ -766,6 +766,11 @@
   .mv-new input{flex:1;min-width:0;border:1.5px solid #E6DDF0;border-radius:10px;padding:7px 9px;font:inherit;font-size:13px}
   .cmp-viejo{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#F6F3FC;font-size:13px;color:var(--muted)}
   .cmp-viejo button{appearance:none;border:0;border-radius:10px;padding:7px 12px;font:inherit;font-size:13px;font-weight:800;color:#7B2FF7;background:#EDE3FF;cursor:pointer}
+  /* Links a la tienda en la lista y en la comparación: morado al pasar el mouse */
+  a.it-link{color:inherit;text-decoration:none;cursor:pointer}
+  a.it-link:hover,a.it-link:focus-visible{color:#7B2FF7;text-decoration:underline;text-underline-offset:3px}
+  .lthumb.con-link{cursor:pointer}
+  .lthumb.con-link:hover{outline:2px solid #C9B2FF;outline-offset:1px}
 </style>
 </head>
 <body class="gated">
@@ -2951,6 +2956,7 @@
           const ln = document.createElement('div'); ln.className = 'ln';
           ln.innerHTML = `<span class="lnn"></span><div class="mini-step"><button type="button" data-d="-1" aria-label="Menos">−</button><b>${fmtQ(x.it.qty)}</b><button type="button" data-d="1" aria-label="Más">+</button></div><span class="lnp"></span>`;
           ln.querySelector('.lnn').textContent = (!(k in SUPERS) && x.it.name) || x.p.nombre;
+          if (x.p.link) { const lnn = ln.querySelector('.lnn'), a = document.createElement('a'); a.className = 'it-link'; a.href = x.p.link; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Ver en ' + nomT(k); a.textContent = lnn.textContent; lnn.textContent = ''; lnn.appendChild(a); }
           ln.querySelector('.lnp').textContent = fmt(x.u * x.it.qty);
           ln.querySelectorAll('.mini-step button').forEach(bt => bt.addEventListener('click', () => {
             const nq = Math.max(1, Math.round((x.it.qty + Number(bt.dataset.d)) * 1000) / 1000);
@@ -2992,7 +2998,10 @@
               const otraMasBarata = otros[0].v < mio - 1;
               if (!otraMasBarata) ln.querySelector('.lnp').classList.add('mejor');
               c.innerHTML = '<div></div>';
-              otros.forEach((o, i) => { if (i) c.children[0].append(' · '); const s = document.createElement('span'); s.className = otraMasBarata && o.v <= otros[0].v + 0.5 ? 'mejor' : 'caro'; s.textContent = nomT(o.k) + '\u00a0' + fmt(o.v).replace(' ', '\u00a0'); c.children[0].appendChild(s); });
+              otros.forEach((o, i) => { if (i) c.children[0].append(' · '); const s = document.createElement('span'); s.className = otraMasBarata && o.v <= otros[0].v + 0.5 ? 'mejor' : 'caro'; s.textContent = nomT(o.k) + '\u00a0' + fmt(o.v).replace(' ', '\u00a0');
+                const lk = res[x.it.id] && res[x.it.id][o.k] && res[x.it.id][o.k].link;
+                if (lk) { const a = document.createElement('a'); a.className = 'it-link ' + s.className; a.href = lk; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Ver en ' + nomT(o.k); a.textContent = s.textContent; c.children[0].appendChild(a); }
+                else c.children[0].appendChild(s); });
               ln.appendChild(c);
             }
           }
@@ -3435,7 +3444,14 @@
       const li = document.createElement('li');
       li.innerHTML = `<span></span><div class="mini-step"><button type="button" data-d="-1" aria-label="Menos">−</button><b>${fmtQ(it.qty)}</b><button type="button" data-d="1" aria-label="Más">+</button></div><button type="button" class="iconbtn" aria-label="Quitar">✕</button>`;
       li.prepend(fotoMini(it.img, 'lthumb'));
-      const sp = li.querySelector('span'); sp.textContent = it.name;
+      const sp = li.querySelector('span');
+      if (it.link) {
+        // El nombre y la foto llevan al producto en su tienda
+        const a = document.createElement('a'); a.className = 'it-link'; a.href = it.link; a.target = '_blank'; a.rel = 'noopener';
+        a.title = 'Ver en ' + (it.statusSup || it.sup || 'la tienda'); a.textContent = it.name; sp.appendChild(a);
+        const ft = li.querySelector('.lthumb'); ft.classList.add('con-link'); ft.title = a.title;
+        ft.addEventListener('click', () => window.open(it.link, '_blank', 'noopener'));
+      } else sp.textContent = it.name;
       const u = itemUnit(it);
       const lp = document.createElement('span'); lp.className = 'lp';
       if (u) {
