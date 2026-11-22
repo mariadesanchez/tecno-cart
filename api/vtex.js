@@ -7,7 +7,7 @@ const TIENDAS = {
   naldo:    { nombre: 'Naldo',    host: 'https://www.naldo.com.ar' },
   cetrogar: { nombre: 'Cetrogar', host: 'https://www.cetrogar.com.ar' },
   oncity:   { nombre: 'On City',  host: 'https://www.oncity.com' },
-  fravega:  { nombre: 'Frávega',  host: 'https://www.fravega.com' },
+  fravega:  { nombre: 'Frávega',  host: 'https://www.fravega.com', web: true },   // se lee del buscador de su web (lib/fravega.js)
   samsung:  { nombre: 'Samsung',  host: 'https://shop.samsung.com/ar' },
   motorola: { nombre: 'Motorola', host: 'https://www.motorola.com.ar' },
   rodo:     { nombre: 'Rodó',     host: 'https://www.rodo.com.ar', magento: true },
@@ -15,6 +15,7 @@ const TIENDAS = {
   macstation: { nombre: 'MacStation', host: 'https://www.macstation.com.ar', odoo: true },
 };
 const rel = require('../lib/relevancia');
+const fravegaWeb = require('../lib/fravega');
 const magento = require('../lib/magento.js');
 const otras = require('../lib/otras.js');
 
@@ -239,7 +240,12 @@ async function handler(req, res) {
   try {
     let productos = [];
     let buscadoPor = '';
-    if (tienda.magento) {
+    let webFallo = false;
+    if (tienda.web) {
+      // Frávega: buscador de su web (lo que realmente se vende, con el precio de hoy). Si no responde, el catálogo viejo.
+      try { productos = await fravegaWeb.buscar({ q: q || codigo, limite }); buscadoPor = 'nombre'; }
+      catch (e) { webFallo = true; }
+    } else if (tienda.magento) {
       productos = await magento.buscar(tienda.host, { q, limite });
       buscadoPor = 'nombre';
     } else if (tienda.prestashop) {
@@ -249,16 +255,16 @@ async function handler(req, res) {
       productos = await otras.odoo(tienda.host, { q, limite });
       buscadoPor = 'nombre';
     }
-    else if (ean && !tienda.prestashop && !tienda.odoo) {
+    else if (ean && !tienda.prestashop && !tienda.odoo && (!tienda.web || webFallo)) {
       productos = mapear(await buscar(tienda.host, 'fq=alternateIds_Ean:' + encodeURIComponent(ean)), ean);
       buscadoPor = 'codigo';
     }
-    if (!tienda.magento && !tienda.prestashop && !tienda.odoo && !productos.length && q) {
+    if (!tienda.magento && !tienda.prestashop && !tienda.odoo && (!tienda.web || webFallo) && !productos.length && q) {
       productos = mapear(await buscar(tienda.host, `ft=${encodeURIComponent(q)}&_from=0&_to=${limite - 1}`), ean);
       buscadoPor = 'nombre';
     }
     // Con medida, también se busca con la medida puesta (la tienda devuelve primero los más grandes)
-    if (medQ.length && !tienda.magento && !tienda.prestashop && !tienda.odoo) {
+    if (medQ.length && !tienda.magento && !tienda.prestashop && !tienda.odoo && !tienda.web) {
       try {
         const extra = mapear(await buscar(tienda.host, `ft=${encodeURIComponent(qOriginal)}&_from=0&_to=49`), ean);
         const ya = new Set(productos.map(p => p.link)); extra.forEach(p => { if (!ya.has(p.link)) productos.push(p); });
