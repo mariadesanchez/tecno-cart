@@ -1087,6 +1087,11 @@
         </div>
         <p class="hint" id="supersTxt" style="margin:6px 0 0"></p>
       </div>
+      <div id="listasMailBox">
+        <div class="ss-lbl">¿Qué listas te llegan en el mail?</div>
+        <div class="ss-supers" id="listasMailSel"></div>
+        <p class="hint" id="listasMailTxt" style="margin:6px 0 0"></p>
+      </div>
     </div>
     <p class="hint" id="syncState"></p>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
@@ -2389,7 +2394,7 @@
   let lists = store.get('super-listas', []);
   // Huella de cada lista: si cambia, la lista se marca para subir a la cuenta
   function listHash(l){
-    const s = JSON.stringify([l.name, l.items, l.pricedAt, l.pricedSuper, l.prevDate, l.priceDelta]);
+    const s = JSON.stringify([l.name, l.enMail !== false, l.items, l.pricedAt, l.pricedSuper, l.prevDate, l.priceDelta]);
     let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
     return h;
   }
@@ -4228,7 +4233,7 @@
   function filaLista(l){
     const datos = { localId: l.id, sinCodigo: l.items.filter(i => !eanOk(i.ean)) };
     LIST_EXTRA.forEach(k => { if (l[k] != null) datos[k] = l[k]; });
-    return { user_id: user.id, nombre: String(l.name || 'Mi lista').slice(0, 80), datos, actualizada: new Date().toISOString() };
+    return { user_id: user.id, nombre: String(l.name || 'Mi lista').slice(0, 80), en_mail: l.enMail !== false, datos, actualizada: new Date().toISOString() };
   }
   function filasItems(l){
     const m = new Map();
@@ -4244,6 +4249,7 @@
   function deFila(r, items){
     const d = r.datos || {};
     const l = { id: d.localId || ('R' + r.id.slice(0, 8)), rid: r.id, name: r.nombre, items: [] };
+    if (r.en_mail === false) l.enMail = false;
     LIST_EXTRA.forEach(k => { if (d[k] != null) l[k] = d[k]; });
     items.forEach(it => {
       const x = it.datos || {};
@@ -4293,7 +4299,7 @@
   }
   async function traerListas(){
     const [rl, ri] = await Promise.all([
-      sb.from('tecno_listas').select('id,nombre,datos,actualizada').order('creada'),
+      sb.from('tecno_listas').select('id,nombre,en_mail,datos,actualizada').order('creada'),
       sb.from('tecno_items').select('lista_id,ean,nombre,cantidad,rubro,imagen,link,datos'),
     ]);
     if (rl.error || ri.error) { toast('No se pudieron traer tus listas. Probá de nuevo.'); return; }
@@ -4432,10 +4438,21 @@
     document.querySelectorAll('#supersSel input').forEach(c => { c.checked = sup.includes(c.value); c.disabled = c.checked && sup.length === 1; });
     const nom = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation', carrefour: 'Carrefour', changomas: 'ChangoMás', jumbo: 'Jumbo' };
     $('supersTxt').textContent = sup.length > 1 ? `Te llega un solo mail comparando ${sup.map(s => nom[s]).join(', ').replace(/, ([^,]*)$/, ' y $1')}: el total de tu lista en cada uno y el precio de cada producto, con el más barato marcado.` : `Te llegan los precios de ${nom[sup[0]]}, con las ofertas arriba.`;
+    // Listas que van al mail ("Recibir en el mail" por lista; se guarda en la columna en_mail)
+    const enM = lists.filter(l => l.enMail !== false);
+    const eh = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    $('listasMailBox').hidden = lists.length < 2;
+    $('listasMailSel').innerHTML = lists.map(l => `<label><input type="checkbox" value="${eh(l.id)}"${l.enMail !== false ? ' checked' : ''}${l.enMail !== false && enM.length === 1 ? ' disabled' : ''}><span>${eh(l.name || 'Mi lista')}</span></label>`).join('');
+    $('listasMailTxt').textContent = enM.length === lists.length ? 'Te llegan todas tus listas, cada una en su sección. Destildá las que no quieras recibir.' : `Te llegan ${enM.length} de tus ${lists.length} listas. Las destildadas siguen guardadas, solo no van al mail.`;
     const g = store.get('sale-guardado', 0), n = lists.reduce((s, l) => s + l.items.length, 0);
     $('syncState').textContent = `${lists.length} ${lists.length === 1 ? 'lista' : 'listas'} con ${n} productos guardadas en tu cuenta`
       + (g ? ` · último cambio: ${new Date(g).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })} h` : '');
   }
+  $('listasMailSel').addEventListener('change', e => {
+    const c = e.target, l = lists.find(x => x.id === c.value); if (!l) return;
+    l.enMail = c.checked; saveLists(); renderAcct();
+    toast(c.checked ? `Listo: «${l.name}» vuelve a llegarte en el mail` : `Listo: «${l.name}» ya no va en el mail`);
+  });
   async function guardarPerfil(cambios, ok){
     const prev = { ...perfil }; perfil = { ...perfil, ...cambios }; renderAcct();
     const { error } = await sb.from('tecno_perfiles').update(cambios).eq('id', user.id);
