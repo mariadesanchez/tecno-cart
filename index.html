@@ -818,7 +818,7 @@
     <ol class="steps"><li><b>Buscá</b> o escaneá un producto</li><li><b>Sumalo</b> a tu lista</li><li><b>Compará</b> y pasá el carrito a cada tienda</li></ol>
     <div class="gate" id="gate">
       <div class="gate-h">Ingresá a tu cuenta</div>
-      <div class="gate-p">Tus listas, las ofertas del día y la comparación de precios, en el celu y en la compu.</div>
+      <div class="gate-p">Entrás con tu Gmail una sola vez, en Tus Carts, y después pasás por todas las apps sin volver a ingresar.</div>
       <button type="button" class="btn gate-btn" id="gateLogin"><span id="gateLoginTxt">Ingresar</span><svg class="ss-ico gate-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4M18 12H8"/></svg></button>
       <div class="gate-msg" id="gateMsg" role="status" hidden></div>
       <div class="gate-links"><a href="/privacidad">Privacidad</a> · <a href="/terminos">Condiciones</a></div>
@@ -4106,6 +4106,8 @@
       }
       if (codigo) history.replaceState(null, '', location.pathname + (location.hash || '#inicio'));
       await onSession(data && data.session);
+      if (data && data.session && new URLSearchParams(location.search).has('cuenta')) history.replaceState(null, '', location.pathname + location.hash);
+      if (!codigo && !(data && data.session)) entrarSolo();
       if (codigo && !(data && data.session)) {
         const m = String((error && error.message) || '');
         setGate(true);
@@ -4325,9 +4327,23 @@
     if (lists.some(l => l.dirty || !l.rid)) subirListas();
   }
   // Login / logout
-  async function login(){
+  // El ingreso con Gmail es solo en la página de inicio (Tus Carts). Desde ahí cada app entra sola con la misma cuenta:
+  // si la app no tiene sesión, va al inicio; el inicio la devuelve con ?cuenta=mail y la app entra con Google sin pedir nada.
+  const INICIO = 'https://tus-carts.vercel.app/';
+  function irAlInicio(extra){ location.href = INICIO + '?' + (extra || 'ir=' + encodeURIComponent(location.origin + location.pathname + (location.hash || ''))); }
+  function entrarSolo(){
+    const q = new URLSearchParams(location.search), h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    if (q.get('error') || h.get('error') || q.get('error_description') || h.get('error_description')) return;   // lo explica errorDeIngreso
+    const cuenta = q.get('cuenta');
+    let ult = 0; try { ult = +sessionStorage.getItem('tc-auto') || 0; } catch (_) {}
+    if (cuenta && Date.now() - ult > 60000) { try { sessionStorage.setItem('tc-auto', String(Date.now())); } catch (_) {} gateBusy(true); login(cuenta); return; }
+    if (cuenta) { gateMsg('No se pudo entrar automáticamente', 'Tocá Ingresar para volver a Tus Carts y entrar desde ahí.'); return; }
+    irAlInicio();
+  }
+  async function login(hint){
+    if (typeof hint !== 'string' || !hint) { irAlInicio(); return; }
     if (!sb) { $('loginErr').textContent = 'El ingreso todavía no está disponible.'; $('loginErr').hidden = false; go('cuenta'); return; }
-    const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + (APP_APPLE ? '/apple' : '/') + '#listas' } });
+    const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { queryParams: { login_hint: hint }, redirectTo: location.origin + (APP_APPLE ? '/apple' : '/') + '#listas' } });
     if (error) { $('loginErr').textContent = 'No se pudo ingresar. Probá de nuevo.'; $('loginErr').hidden = false; }
   }
   // Ingreso con el botón de Google dentro de la página: Google muestra la dirección de la app
@@ -4360,6 +4376,7 @@
     setTimeout(ajustar, 600); setTimeout(ajustar, 2000);
   }
   async function initGis(){
+    return;   // el botón de Google ya no va en las apps: se entra desde Tus Carts
     if (gisListo || !sb || !(window.google && google.accounts && google.accounts.id) || !(window.crypto && crypto.subtle)) return;
     try { await nuevoNonce(); gisListo = true; ['gateLogin'].map($).concat([...document.querySelectorAll('[data-login]')]).forEach(cubrir); } catch(_) {}
   }
@@ -4388,6 +4405,7 @@
     renderWho(); renderAcct(); renderLists(); if (view === 'listas') renderBuilder(); if (view === 'ofertas') renderOfList();
     setGate(true); $('gateMsg').hidden = true;
     toast('Cerraste sesión. Tus listas te esperan la próxima vez que entres.');
+    irAlInicio('salir=1');   // también se cierra en Tus Carts, si no volvería a entrar sola
   }
   document.querySelectorAll('[data-login]').forEach(b => b.addEventListener('click', login));
   $('logout').addEventListener('click', logout);
@@ -4405,7 +4423,7 @@
     if (error) { toast('No se pudo borrar. Probá de nuevo.'); return; }
     await sb.auth.signOut(); user = null; perfil = null; sessionUid = null; esAdmin = false; renderAdminBtns();
     lists = [{ id: uid(), name: 'Mi lista', items: [] }]; bListId = lists[0].id; ridsPrev = []; store.set('super-listas', lists); store.set('sale-borradas', []);
-    renderWho(); renderAcct(); renderLists(); setGate(true); toast('Listo: borramos tu cuenta y tus datos');
+    renderWho(); renderAcct(); renderLists(); setGate(true); toast('Listo: borramos tu cuenta y tus datos'); setTimeout(() => irAlInicio('salir=1'), 1500);
   });
   function renderWho(){
     const w = $('who'); w.hidden = !sb; $('whoMenu').hidden = true;
