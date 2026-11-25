@@ -267,6 +267,16 @@ async function handler(req, res) {
       productos = mapear(await buscar(tienda.host, `ft=${encodeURIComponent(q)}&_from=0&_to=${limite - 1}`), ean);
       buscadoPor = 'nombre';
     }
+    // Número suelto sin la letra del modelo ("celular galaxy 16"): las tiendas no encuentran el A16 así,
+    // entonces también se busca sin el número y sin la palabra genérica, y después se filtra por "A16", "S16"…
+    const qSinNum = !ean && !buscaModelo ? rel.sinNumeros(q) : q;
+    if (qSinNum && qSinNum !== q && !tienda.magento && !tienda.prestashop && !tienda.odoo && !tienda.web) {
+      try {
+        const qs = [qSinNum, rel.sinGenericos(qSinNum)].filter((x, i, a) => x && a.indexOf(x) === i);
+        const extra = mapear([].concat(...await Promise.all(qs.map(x => buscar(tienda.host, `ft=${encodeURIComponent(x)}&_from=0&_to=49`).catch(() => [])))), ean);
+        const ya = new Set(productos.map(p => p.link)); extra.forEach(p => { if (p.link && !ya.has(p.link)) { ya.add(p.link); productos.push(p); } });
+      } catch (_) { /* con lo que hay */ }
+    }
     // Con medida, también se busca con la medida puesta (la tienda devuelve primero los más grandes)
     if (medQ.length && !tienda.magento && !tienda.prestashop && !tienda.odoo && !tienda.web) {
       try {
@@ -289,7 +299,7 @@ async function handler(req, res) {
     productos.forEach(p => { delete p.medidas; delete p.categorias; });
     productos.sort((a, b) => (Number(b.exacto) - Number(a.exacto)) || (Number(a.sin_stock) - Number(b.sin_stock)));
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
-    res.setHeader('X-Version', 'busqueda-4');
+    res.setHeader('X-Version', 'busqueda-5');
     res.statusCode = 200;
     return res.end(JSON.stringify(Object.assign({ ok: true, super: tienda.nombre, buscado_por: buscadoPor, total: productos.length, productos }, tienda.web ? { fuente: webFallo ? 'catalogo' : 'web', aviso: webFallo || undefined } : {})));
   } catch (err) {
