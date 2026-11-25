@@ -225,7 +225,7 @@ async function handler(req, res) {
     res.statusCode = 400;
     return res.end(JSON.stringify({ ok: false, error: 'Tienda desconocida', tiendas: Object.keys(TIENDAS) }));
   }
-  let q = String(query.q || '').trim().slice(0, 80);
+  let q = rel.juntar(String(query.q || '').trim().slice(0, 80));   // "galaxy a 16" -> "galaxy a16": así lo encuentran las tiendas
   // Algunas tiendas (Cetrogar) usan el modelo como "código": si no es un código de barras, se busca por el modelo
   const codigo = String(query.ean || '').trim().slice(0, 30);
   const ean = /^\d{8,14}$/.test(codigo) ? codigo : '';
