@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script>document.documentElement.classList.add('entrando')</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FF2E7E">
@@ -647,6 +648,11 @@
   body.gated #hero{min-height:calc(100vh - 34px);border-radius:0}
   body.gated #tagBox, body.gated .actions-hero, body.gated #who{display:none!important}
   body.gated .gate{display:block;margin-top:22px;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.35);border-radius:22px;padding:18px;max-width:520px}
+  /* Llegando desde Tus Carts: en lugar del cartel de ingreso, solo un spinner (el ingreso ya se hizo en el inicio) */
+  html.entrando body.gated .gate{display:flex!important;flex-direction:column;align-items:center;gap:14px;background:none;border:0;padding:28px 0;max-width:none}
+  html.entrando body.gated .gate > *, html.entrando body.gated #hero .steps{display:none!important}
+  html.entrando body.gated .gate::before{content:"";width:54px;height:54px;border-radius:50%;border:6px solid rgba(255,255,255,.28);border-top-color:#fff;border-right-color:#fff;animation:spin .8s linear infinite;box-shadow:0 8px 22px -10px rgba(0,0,0,.45)}
+  html.entrando body.gated .gate::after{content:"Entrando…";font-weight:800;font-size:16px;letter-spacing:.02em;opacity:.95}
   .gate-h{font-family:var(--display);font-weight:800;font-size:22px;line-height:1.15;margin-bottom:6px}
   .gate-p{font-size:15px;line-height:1.45;opacity:.92;margin-bottom:18px}
   .gate-ico{width:20px;height:20px}
@@ -4193,7 +4199,7 @@
     if (on && !was) { cerrarAdmin(); menu(false); window.scrollTo(0, 0); }
     if (!on && was) { $('gateMsg').hidden = true; contarOfertas(); showView((location.hash || '#inicio').slice(1).split('&')[0], { keepScroll: true }); }
   }
-  function gateMsg(titulo, texto){ const m = $('gateMsg'); m.innerHTML = (titulo ? '<b>' + escH(titulo) + '</b>' : '') + escH(texto || ''); m.hidden = false; }
+  function gateMsg(titulo, texto){ document.documentElement.classList.remove('entrando'); const m = $('gateMsg'); m.innerHTML = (titulo ? '<b>' + escH(titulo) + '</b>' : '') + escH(texto || ''); m.hidden = false; }
   const GATE_BTN = $('gateLogin').innerHTML;
   function gateBusy(on){ const b = $('gateLogin'); b.disabled = on; b.innerHTML = on ? '<span class="gate-spin" aria-hidden="true"></span><span>Ingresando…</span>' : GATE_BTN; if (!on && gisListo) cubrir(b); }
   $('gateLogin').addEventListener('click', () => { gateBusy(true); $('gateMsg').hidden = true; login().finally(() => setTimeout(() => gateBusy(false), 6000)); });
@@ -4209,6 +4215,7 @@
     const q = new URLSearchParams(location.search), h = new URLSearchParams(location.hash.replace(/^#/, ''));
     const err = q.get('error_description') || h.get('error_description') || q.get('error') || h.get('error');
     if (!err) return false;
+    document.documentElement.classList.remove('entrando');
     history.replaceState(null, '', location.pathname + '#cuenta');
     if (/NO_PERMITIDO|saving new user|Database error|not allowed|signups/i.test(err)) mensaje('Tu cuenta no tiene acceso', 'Ese mail ' + NO_HAB);
     else mensaje('No se pudo ingresar', 'Hubo un problema al ingresar. Probá de nuevo en un rato.');
