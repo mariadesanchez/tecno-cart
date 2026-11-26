@@ -262,6 +262,11 @@
   .tabbar button{position:relative;appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-size:11px;white-space:nowrap;font-weight:700;
     display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:14px;cursor:pointer}
   .tabbar svg{width:24px;height:24px}
+  /* La barra se reparte entre los botones visibles (Usuarios solo para quien administra) */
+  .tabbar{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:1fr}
+  .tabbar button[hidden]{display:none}
+  /* Sin el menú de usuario de arriba: todo está en la barra de abajo y en el menú ☰ (Cerrar sesión) */
+  #who, #whoMenu{display:none!important}
   .tabbar button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
   .tab-badge{position:absolute;top:2px;left:calc(50% + 6px);min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--grape);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 var(--grape-deep)}
   .tab-badge.zero{background:var(--muted);opacity:.75}
@@ -1043,7 +1048,6 @@
     </div>
     <ul class="lst-items" id="bItems"></ul>
     <div class="lsum" id="bSum" hidden></div>
-    <div class="hint">☁️ Tu lista se guarda en tu cuenta: la ves igual en el celular y en la compu.</div>
     <div hidden><button type="button" class="btn w100 gs-btn" id="bSheets">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm4 18H6V4h7v5h5zM8 12h8v6H8zm1.5 1.5v1.2h2v-1.2zm3 0v1.2h2v-1.2zm-3 2.3v1.2h2v-1.2zm3 0v1.2h2v-1.2z"/></svg>
       Copiar para Google Sheets
@@ -1256,6 +1260,9 @@
   <button type="button" data-go="cuenta" aria-label="Mi cuenta">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
     <span>Mi cuenta</span></button>
+  <button type="button" id="tabAdmin" aria-label="Usuarios autorizados" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1.2-3.2 3.6-4.6 6.5-4.6s5.3 1.4 6.5 4.6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 15.6c1.7.6 2.9 2 3.5 4.4"/></svg>
+    <span>Usuarios</span></button>
 </nav>
 
 <div class="sheet" id="addSheet" hidden>
@@ -3295,11 +3302,6 @@
     // Mientras se ven los resultados, la lista queda plegada para no mostrar los productos dos veces
     if (box.id === 'bPlan') {
       const bd = $('builder'); bd.classList.add('con-plan');
-      const tg = document.createElement('button'); tg.type = 'button'; tg.className = 'btn btn-ghost w100 ver-lista';
-      const txt = () => bd.classList.contains('lista-abierta') ? 'Ocultar mi lista ▴' : 'Ver y editar mi lista (' + l.items.length + ') ▾';
-      tg.textContent = txt();
-      tg.addEventListener('click', () => { bd.classList.toggle('lista-abierta'); tg.textContent = txt(); });
-      box.appendChild(tg);
     }
   }
 
@@ -4309,7 +4311,7 @@
     await cargarCuenta();
   }
   // ---------- administración de usuarios (solo admin) ----------
-  function renderAdminBtns(){ const on = !!(user && esAdmin); $('adminBtn').hidden = !on; $('wmAdmin').hidden = !on; if (!on) cerrarAdmin(); }
+  function renderAdminBtns(){ const on = !!(user && esAdmin); $('adminBtn').hidden = !on; $('wmAdmin').hidden = !on; $('tabAdmin').hidden = !on; window.tusCartsSalir = user ? logout : null; if (!on) cerrarAdmin(); }
   const fechaCorta = d => d ? new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '';
   async function abrirAdmin(){
     if (!esAdmin) return;
@@ -4356,6 +4358,7 @@
     toast('Listo: ' + email + ' ya puede ingresar'); cargarUsuarios();
   });
   $('adminBtn').addEventListener('click', abrirAdmin);
+  $('tabAdmin').addEventListener('click', abrirAdmin);
   document.querySelectorAll('[data-adm-close]').forEach(b => b.addEventListener('click', cerrarAdmin));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('adminSheet').hidden && $('modal').style.display !== 'flex') cerrarAdmin(); });
 
