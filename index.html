@@ -711,6 +711,13 @@
   .lmod-ok{appearance:none;border:0;background:var(--accent);color:#fff;width:42px;height:42px;border-radius:12px;font-size:20px;font-weight:900;cursor:pointer;flex:none}
   .lmod-add{appearance:none;width:100%;border:2px dashed rgba(127,127,127,.35);background:none;color:inherit;font:inherit;font-weight:800;font-size:16px;padding:13px;border-radius:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
   .lmod-add span{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:20px;line-height:1}
+  /* Fondo fucsia como el de la página; las filas en tarjetas */
+  .lmod-box{background:linear-gradient(160deg, #FF5A9A 0%, var(--grape) 50%, var(--grape-deep) 100%);color:#fff}
+  .lmod-x{background:rgba(255,255,255,.22);color:#fff}
+  .lmod-row{background:var(--card);color:var(--ink);border-color:transparent;box-shadow:0 6px 14px -10px rgba(80,0,40,.6)}
+  .lmod-row.on{border-color:#FFF01F;background:var(--card)}
+  .lmod-add{border-color:rgba(255,255,255,.75);color:#fff;background:rgba(255,255,255,.1)}
+  .lmod-add span{background:#fff;color:var(--grape)}
   #bShare, #bSheets, #lShareBtn{display:none!important}   /* compartir ya no va en las listas */
   #bShare, #bSheets{display:none!important}   /* las listas viven en la cuenta: ya no hace falta compartirlas ni copiarlas */
   .ss-supers{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-top:8px}
