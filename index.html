@@ -3100,7 +3100,7 @@
           ln.children[0].textContent = 'Ahorrás ' + fmt(baseInicial.total - comboTotal) + ' frente a comprar todo en ' + nomT(baseInicial.k) + ' (' + fmt(baseInicial.total) + ').';
         }
         const vb = document.createElement('button'); vb.type = 'button'; vb.className = 'ahorro-btn';
-        vb.textContent = baseInicial ? 'Mis ahorros' : 'Ver las ofertas de tu carrito';
+        vb.textContent = 'Mis ahorros';
         vb.addEventListener('click', () => verAhorro(baseInicial));
         ln.appendChild(vb);
         if (rs) rs.appendChild(ln);
