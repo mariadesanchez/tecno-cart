@@ -571,6 +571,23 @@
   .ln-of{grid-area:o;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--price-hot);font-weight:700;font-size:13px;line-height:1.3}
   .ln-of span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;flex:1}
   .ln-of button{flex:none;border:0;border-radius:10px;padding:6px 10px;font-weight:800;font-size:13px;color:#fff;background:var(--price-hot);cursor:pointer}
+  /* Cada producto del carrito, en tarjeta como en el mail: foto grande, precio en botón, cantidad, oferta y las otras tiendas */
+  .opt .grp .ln.lc{grid-template-columns:92px 1fr;grid-template-areas:"img n" "img p" "img r" "img s" "img o" "c c";align-items:start;gap:6px 14px;background:var(--card);border:2px solid color-mix(in srgb, var(--grape) 16%, var(--line));border-bottom-width:5px;border-radius:18px;padding:12px;margin:10px 0}
+  .opt .grp .ln.lc .pthumb{width:92px;height:92px;border-radius:14px;align-self:start}
+  .opt .grp .ln.lc .lnn{font-size:15.5px;line-height:1.3;white-space:normal;overflow:visible}
+  .opt .grp .ln.lc .lnn a{white-space:normal}
+  .opt .grp .ln.lc .lnp{justify-self:start;text-align:left;display:inline-block;padding:6px 13px;border-radius:12px;font-size:19px;font-weight:900;background:color-mix(in srgb, var(--ink) 8%, var(--card));color:var(--ink);border-bottom:4px solid color-mix(in srgb, var(--ink) 18%, var(--card))}
+  .opt .grp .ln.lc .lnp.hot{background:#FFE3EE;color:#D3125F;border-bottom-color:#F7B3CD}
+  .opt .grp .ln.lc .lnp.mejor{background-color:#7CB342;background-image:linear-gradient(#A5D16B,#7CB342);color:#fff;border-bottom-color:#5E8F2A}
+  .opt .grp .ln.lc .lnp.mejor::before{content:"✓ "}
+  .opt .grp .ln.lc .mini-step,.opt .grp .ln.lc .lnq{justify-self:start;margin-top:2px}
+  .opt .grp .ln.lc .mini-step button{width:32px;height:32px;border-radius:10px}
+  .lnr{grid-area:r;font-size:13.5px;display:flex;align-items:center;gap:6px}
+  .lnr s{color:var(--muted)}
+  .lnr i{font-style:normal;padding:2px 8px;border-radius:8px;background:#FF2E7E;color:#fff;font-weight:800;font-size:12.5px}
+  .opt .grp .ln.lc .ln-cmp{border-top:1px dashed var(--line);padding-top:8px;margin-top:4px;font-size:13.5px;line-height:1.75}
+  .opt .grp .ln.lc.tachado{opacity:1}
+  @media (max-width:420px){ .opt .grp .ln.lc{grid-template-columns:74px 1fr} .opt .grp .ln.lc .pthumb{width:74px;height:74px} }
   .grp.solo{margin-top:6px;padding-top:0;border-top:0}
   .grp.solo .grp-h > span{display:block;color:var(--muted);font-size:14px}
   .grp.solo .grp-h .bestTag{display:inline-block;margin:0 8px 4px 0}
@@ -3000,7 +3017,7 @@
             d.appendChild(lt); return;
           }
           if (x.tipo === 'sueltos') {
-            const ls = document.createElement('div'); ls.className = 'ln';
+            const ls = document.createElement('div'); ls.className = 'ln lc';
             ls.innerHTML = '<span class="lnn"></span><span class="lnq"></span><span class="lnp mejor"></span><div class="ln-cmp"><div></div></div>';
             ls.querySelector('.lnn').textContent = x.p.nombre;
             ls.querySelector('.lnq').textContent = x.qty + ' unidades';
@@ -3009,7 +3026,7 @@
             ls.prepend(fotoMini(x.p.imagen || x.it.img, 'pthumb'));
             d.appendChild(ls); return;
           }
-          const ln = document.createElement('div'); ln.className = 'ln';
+          const ln = document.createElement('div'); ln.className = 'ln lc';
           ln.innerHTML = `<span class="lnn"></span><div class="mini-step"><button type="button" data-d="-1" aria-label="Menos">−</button><b>${fmtQ(x.it.qty)}</b><button type="button" data-d="1" aria-label="Más">+</button></div><span class="lnp"></span>`;
           ln.querySelector('.lnn').textContent = (!(k in SUPERS) && x.it.name) || x.p.nombre;
           if (x.p.link) { const lnn = ln.querySelector('.lnn'), a = document.createElement('a'); a.className = 'it-link'; a.href = x.p.link; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Ver en ' + nomT(k); a.textContent = lnn.textContent; lnn.textContent = ''; lnn.appendChild(a); }
@@ -3021,6 +3038,14 @@
             const y = window.scrollY; renderPlan(l, box, res); window.scrollTo(0, y);
           }));
           ln.prepend(fotoMini(x.p.imagen || x.it.img, 'pthumb'));
+          // Como en el mail: precio de lista tachado y % de descuento
+          if (x.p.precio_promo && x.p.precio > 0 && x.u < x.p.precio - 0.5) {
+            const rg = document.createElement('div'); rg.className = 'lnr';
+            rg.innerHTML = '<s></s><i></i>';
+            rg.children[0].textContent = fmt(x.p.precio * x.it.qty);
+            rg.children[1].textContent = Math.round((1 - x.u / x.p.precio) * 100) + '% off';
+            ln.appendChild(rg);
+          }
           // Oferta de este súper: en rojo, y cuántas unidades llevar para aprovecharla
           if (x.p.precio_promo) {
             const n = lleva(x.p), aplicada = x.it.qty >= n && x.u < x.p.precio - 0.5;
@@ -3040,7 +3065,7 @@
             if (of.textContent) ln.appendChild(of);
           }
           // Sin oferta: el precio en las otras tiendas, para que se vea que se eligió el más conveniente
-          if (!enOf(x)) {
+          {   // el precio en las otras tiendas (con o sin oferta), como en el mail
             const mio = x.u * x.it.qty;
             const otros = keys.filter(k2 => k2 !== k).map(k2 => {
               const p2 = res[x.it.id] && res[x.it.id][k2], u2 = p2 ? unitFor(p2, x.it.qty) : 0;
