@@ -621,7 +621,11 @@
   .grp-h:has(.grp-acts)>span{flex-basis:100%}
   .falt-btn{flex:none;padding:8px 12px;font-size:14px;font-weight:800;border-radius:12px;border:1.5px solid var(--price-hot);color:var(--price-hot);background:var(--card);cursor:pointer}
   .modal{position:fixed;inset:0;background:rgba(34,22,46,.5);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}
-  .modal .box{background:var(--card);border-radius:18px;padding:22px;max-width:340px;width:100%}
+  .modal .box{background:var(--card);border-radius:18px;padding:22px;max-width:340px;width:100%;position:relative}
+  .modal .box > p{padding-right:30px}
+  .mx{position:absolute;top:12px;right:12px;appearance:none;border:0;background:rgba(127,127,127,.14);color:inherit;width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer}
+  .btn.btn-suave{background:#FCE4EA;color:#C2334D;border:0;box-shadow:none;font-weight:800}
+  .btn.btn-suave:hover{background:#F9D3DD}
   .modal p{margin:0 0 16px}
   .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--grape);color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;white-space:nowrap}
   .toast.show{opacity:1}
@@ -801,6 +805,7 @@
   .mv-new input{flex:1;min-width:0;border:1.5px solid #E6DDF0;border-radius:10px;padding:7px 9px;font:inherit;font-size:13px}
   .cmp-viejo{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#F6F3FC;font-size:13px;color:var(--muted)}
   .cmp-viejo.vieja{background:#FFF4E0;color:#8A5A00}
+  .cmp-viejo b{color:#1B2140}
   .cmp-viejo button{appearance:none;border:0;border-radius:10px;padding:7px 12px;font:inherit;font-size:13px;font-weight:800;color:#7B2FF7;background:#EDE3FF;cursor:pointer}
   /* Links a la tienda en la lista y en la comparación: morado al pasar el mouse */
   a.it-link{color:inherit;text-decoration:none;cursor:pointer}
@@ -1259,8 +1264,9 @@
   </div>
 </div>
 <div class="modal" id="modal"><div class="box">
+  <button type="button" class="mx" id="mX" aria-label="Cerrar">✕</button>
   <p><b id="mTitle">¿Vaciar el ticket?</b><br><span id="mText" style="color:var(--muted);font-size:14px">Se borran los productos de esta compra. Tus productos guardados y sus precios se mantienen.</span></p>
-  <div class="row"><button class="btn btn-ghost" style="flex:1" id="mNo">Cancelar</button><button class="btn btn-primary" style="flex:1;background:var(--danger);color:#fff" id="mYes">Vaciar</button></div>
+  <div class="row"><button class="btn btn-ghost" style="flex:1" id="mNo">Cancelar</button><button class="btn btn-suave" style="flex:1" id="mYes">Vaciar</button></div>
 </div></div>
 <div class="toast" id="toast"></div>
 
@@ -1616,6 +1622,7 @@
     confirmCb = cb; $('modal').style.display = 'flex';
   }
   $('mNo').addEventListener('click', () => { $('modal').style.display = 'none'; confirmCb = null; });
+  $('mX').addEventListener('click', () => { $('modal').style.display = 'none'; confirmCb = null; });
   $('mYes').addEventListener('click', () => { $('modal').style.display = 'none'; const cb = confirmCb; confirmCb = null; if (cb) cb(); });
   $('clearBtn').addEventListener('click', () => {
     const v = cartView;
@@ -2650,15 +2657,14 @@
     if (box.querySelector('.cmp-viejo')) return;
     const min = Math.max(0, Math.round((Date.now() - t) / 60000));
     const d = document.createElement('div'); d.className = 'cmp-viejo';
-    d.innerHTML = '<span></span><button type="button">Comparar de nuevo</button>';
+    d.innerHTML = '<span></span>';
     // "Última comparación: hoy 18:40 (hace 25 min)" / "ayer 21:10" / "lun 17/11 09:30"
     const f = new Date(t), hoy = new Date(), ayer = new Date(Date.now() - 864e5);
     const dos = n => String(n).padStart(2, '0'), hora = dos(f.getHours()) + ':' + dos(f.getMinutes());
     const dia = f.toDateString() === hoy.toDateString() ? 'hoy' : f.toDateString() === ayer.toDateString() ? 'ayer' : ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'][f.getDay()] + ' ' + dos(f.getDate()) + '/' + dos(f.getMonth() + 1);
     const hace = min < 1 ? 'recién' : min < 60 ? 'hace ' + min + ' min' : min < 48 * 60 ? 'hace ' + Math.round(min / 60) + ' h' : 'hace ' + Math.round(min / 1440) + ' días';
-    d.querySelector('span').textContent = '🕒 Última comparación: ' + dia + ' ' + hora + ' (' + hace + ')' + (min >= 12 * 60 ? '. Los precios pueden haber cambiado.' : '');
+    d.querySelector('span').innerHTML = '🕒 Última comparación: <b>' + dia + ' ' + hora + '</b> (' + hace + ')' + (min >= 12 * 60 ? '. Los precios pueden haber cambiado.' : '');
     if (min >= 12 * 60) d.classList.add('vieja');
-    d.querySelector('button').addEventListener('click', () => runList(l, box));
     box.prepend(d);
   }
 
