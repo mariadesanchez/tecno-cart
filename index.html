@@ -497,6 +497,17 @@
   .ah-p b{color:var(--price-hot);font-size:15px}
   .ah-b{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:13px;color:var(--muted)}
   .ah-b em{font-style:normal;font-weight:800;color:#1F8A4C}
+  /* Mis ahorros: tarjetas como las del mail */
+  .ah-card{grid-template-columns:92px 1fr;gap:6px 14px;padding:12px;background:var(--card);border:2px solid color-mix(in srgb, var(--grape) 16%, var(--line));border-left:2px solid color-mix(in srgb, var(--grape) 16%, var(--line));border-bottom-width:5px;border-radius:18px}
+  .ah-card .lthumb{grid-row:span 2;width:92px;height:92px;border-radius:14px;object-fit:contain;background:#fff}
+  .ah-n{font-size:15.5px;line-height:1.3}
+  .ah-p{flex-direction:column;align-items:flex-start;gap:6px}
+  .ah-v{display:inline-block;padding:6px 13px;border-radius:12px;font-size:19px;font-weight:900;color:#fff;background-color:#7CB342;background-image:linear-gradient(#A5D16B,#7CB342);border-bottom:4px solid #5E8F2A}
+  .ah-v::before{content:"✓ "}
+  .ah-b{grid-column:1 / -1;align-items:center;border-top:1px dashed var(--line);padding-top:9px;margin-top:4px;font-size:14px}
+  .ah-b span b{color:var(--ink)}
+  .ah-b em{padding:5px 11px;border-radius:10px;background:#E6F4D7;color:#3F7A12;font-size:14px}
+  @media (max-width:420px){ .ah-card{grid-template-columns:74px 1fr} .ah-card .lthumb{width:74px;height:74px} }
   /* botón de cada tienda: carrito + nombre, del color de la tienda */
   .opt .grp .pasar,.opt .grp .pasar.rosa{display:inline-flex;align-items:center;gap:6px;background:var(--tc)!important;color:#fff;box-shadow:0 3px 0 color-mix(in srgb, var(--tc) 70%, #000)!important}
   .opt .grp .pasar svg{width:18px;height:18px;flex:none}
@@ -3183,13 +3194,19 @@
               c.innerHTML = '<div class="ah-top"><b class="ah-n"></b><span class="ah-t"></span></div><div class="ah-p"></div><div class="ah-b"></div>';
               c.prepend(fotoMini(f.x.p.imagen || f.x.it.img, 'lthumb'));
               c.querySelector('.ah-n').textContent = (f.x.it.qty !== 1 ? fmtQ(f.x.it.qty) + ' × ' : '') + f.x.p.nombre;
-              const tg = c.querySelector('.ah-t'); if (f.conOferta) tg.textContent = '🔥 ' + String(f.x.p.promo || 'Oferta').split(' · ')[0]; else tg.remove();
+              // Como en el mail: precio en botón verde, tachado con % off, y abajo cuánto sale en el otro súper y cuánto ahorrás
+              const tg = c.querySelector('.ah-t'); if (f.conOferta && lleva(f.x.p) > 1) tg.textContent = '🔥 ' + String(f.x.p.promo || 'Oferta').split(' · ')[0]; else tg.remove();
               const pp = c.querySelector('.ah-p'), sin = f.x.p.precio * f.x.it.qty, con = f.x.u * f.x.it.qty;
-              if (f.conOferta) { pp.innerHTML = '<span>Sin oferta <s></s></span><span>Con oferta <b></b></span>'; pp.querySelector('s').textContent = fmt(sin); pp.querySelector('b').textContent = fmt(con); }
-              else { pp.innerHTML = '<span>Precio <b></b></span>'; pp.querySelector('b').textContent = fmt(con); }
+              pp.innerHTML = '<span class="ah-v"></span>'; pp.children[0].textContent = fmt(con);
+              if (f.conOferta && sin > con + 0.5) {
+                const mp = lleva(f.x.p) <= 1 && String(f.x.p.promo || '').match(/(\d+)\s*%/);
+                const rg = document.createElement('div'); rg.className = 'lnr'; rg.innerHTML = '<s></s><i></i>';
+                rg.children[0].textContent = fmt(sin); rg.children[1].textContent = (mp ? mp[1] : Math.round((1 - con / sin) * 100)) + '% off';
+                pp.appendChild(rg);
+              }
               const bb = c.querySelector('.ah-b');
               if (!base) bb.remove();
-              else if (f.enBase) { bb.innerHTML = '<span></span><em></em>'; bb.children[0].textContent = 'En ' + nomT(base.k) + ': ' + fmt(f.enBase.u * f.x.it.qty); bb.children[1].textContent = 'Ahorrás ' + fmt(f.ahorro); }
+              else if (f.enBase) { bb.innerHTML = '<span>En <b></b>: <span></span></span><em></em>'; bb.querySelector('b').textContent = nomT(base.k); bb.querySelector('span span').textContent = fmt(f.enBase.u * f.x.it.qty); bb.children[1].textContent = 'Ahorrás ' + fmt(f.ahorro); }
               else { bb.innerHTML = '<span></span>'; bb.children[0].textContent = nomT(base.k) + ' no lo tiene'; }
               sec.appendChild(c);
             });
