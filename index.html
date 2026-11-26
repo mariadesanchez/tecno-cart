@@ -3043,7 +3043,8 @@
             const rg = document.createElement('div'); rg.className = 'lnr';
             rg.innerHTML = '<s></s><i></i>';
             rg.children[0].textContent = fmt(x.p.precio * x.it.qty);
-            rg.children[1].textContent = Math.round((1 - x.u / x.p.precio) * 100) + '% off';
+            const mp = lleva(x.p) <= 1 && String(x.p.promo || '').match(/(\d+)\s*%/);   // el % que publica la tienda (25%Dto), si lo hay
+            rg.children[1].textContent = (mp ? mp[1] : Math.round((1 - x.u / x.p.precio) * 100)) + '% off';
             ln.appendChild(rg);
           }
           // Oferta de este súper: en rojo, y cuántas unidades llevar para aprovecharla
@@ -3051,7 +3052,7 @@
             const n = lleva(x.p), aplicada = x.it.qty >= n && x.u < x.p.precio - 0.5;
             const of = document.createElement('div'); of.className = 'ln-of';
             const pr = (x.p.promo || 'Oferta').split(' · ')[0];
-            if (aplicada) { of.textContent = '🔥 ' + pr + (n > 1 ? ' · llevás ' + fmtQ(x.it.qty) + ', pagás ' + fmt(x.u) + ' c/u' : ''); ln.querySelector('.lnp').classList.add('hot'); }
+            if (aplicada) { if (n > 1) of.textContent = '🔥 ' + pr + ' · llevás ' + fmtQ(x.it.qty) + ', pagás ' + fmt(x.u) + ' c/u'; ln.querySelector('.lnp').classList.add('hot'); }   // un % simple ya se ve en el tachado
             else if (n > x.it.qty) {
               of.innerHTML = '<span></span><button type="button"></button>';
               of.children[0].textContent = '🔥 ' + pr + ': llevá ' + n + ' y pagás ' + fmt(x.p.precio_promo) + ' c/u';
