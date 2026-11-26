@@ -3347,13 +3347,15 @@
   const ICO_LAPIZ = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
   const ICO_TACHO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
   const escL = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // La lista que se llama "Mi lista" (la de siempre) se muestra con el nombre de la sección: "Tecno Lista", "Super Lista"…
+  function nombreLista(n){ return !n || /^mi lista$/i.test(String(n).trim()) ? (APP_APPLE ? 'Apple' : 'Tecno') + ' Lista' : n; }
   function pintarListasModal(editId, creando){
     const rows = $('lmodRows'); if (!rows) return;
     const cur = ensureList();
     rows.innerHTML = lists.map(l => {
       const n = l.items.length, act = l.id === cur.id;
-      if (l.id === editId) return `<form class="lmod-row on" data-id="${escL(l.id)}" data-f="ren"><input class="lmod-in" maxlength="40" value="${escL(l.name || 'Mi lista')}" aria-label="Nuevo nombre de la lista"><button class="lmod-ok" type="submit" aria-label="Guardar nombre">✓</button></form>`;
-      return `<div class="lmod-row${act ? ' on' : ''}" data-id="${escL(l.id)}"><button type="button" class="lmod-name" data-a="ir"><b>${escL(l.name || 'Mi lista')}</b><small>${n} ${n === 1 ? 'producto' : 'productos'}${act ? ' · abierta' : ''}</small></button>`
+      if (l.id === editId) return `<form class="lmod-row on" data-id="${escL(l.id)}" data-f="ren"><input class="lmod-in" maxlength="40" value="${escL(nombreLista(l.name))}" aria-label="Nuevo nombre de la lista"><button class="lmod-ok" type="submit" aria-label="Guardar nombre">✓</button></form>`;
+      return `<div class="lmod-row${act ? ' on' : ''}" data-id="${escL(l.id)}"><button type="button" class="lmod-name" data-a="ir"><b>${escL(nombreLista(l.name))}</b><small>${n} ${n === 1 ? 'producto' : 'productos'}${act ? ' · abierta' : ''}</small></button>`
         + `<button type="button" class="lmod-ic" data-a="ren" aria-label="Renombrar ${escL(l.name)}">${ICO_LAPIZ}</button><button type="button" class="lmod-ic del" data-a="del" aria-label="Eliminar ${escL(l.name)}">${ICO_TACHO}</button></div>`;
     }).join('') + (creando
       ? '<form class="lmod-row on" data-f="new"><input class="lmod-in" maxlength="40" placeholder="Nombre de la nueva lista" aria-label="Nombre de la nueva lista"><button class="lmod-ok" type="submit" aria-label="Crear lista">✓</button></form>'
@@ -3531,7 +3533,7 @@
   function renderBuilderItems(){
     const l = ensureList(); const ul = $('bItems'); ul.innerHTML = '';
     [...$('bList').options].forEach(o => { const x = lists.find(y => y.id === o.value); if (x) o.textContent = `${x.name} (${x.items.length})`; });
-    $('bListTitle').textContent = l.items.length ? `Productos (${l.items.length})` : 'Productos'; $('lName').textContent = l.name;
+    $('bListTitle').textContent = l.items.length ? `Productos (${l.items.length})` : 'Productos'; $('lName').textContent = nombreLista(l.name);
     if (!l.items.length) { const li = document.createElement('li'); li.innerHTML = '<span style="color:var(--muted)">Tu lista está vacía. Tocá “+ Agregar productos” para buscarlos.</span>'; ul.appendChild(li); }
     // Agrupados por tienda, en el orden de las tiendas de la app
     const ORDEN = Object.values(SUPERS);
