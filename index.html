@@ -582,6 +582,10 @@
   .opt .grp .ln.lc .lnp.mejor::before{content:"✓ "}
   .opt .grp .ln.lc .mini-step,.opt .grp .ln.lc .lnq{justify-self:start;margin-top:2px}
   .opt .grp .ln.lc .mini-step button{width:32px;height:32px;border-radius:10px}
+  .opt .grp .ln.lc{position:relative}
+  .opt .grp .ln.lc .lnn{padding-right:34px}
+  .ln-x{position:absolute;top:8px;right:8px;appearance:none;border:0;width:32px;height:32px;border-radius:50%;background:color-mix(in srgb, var(--ink) 8%, var(--card));color:var(--muted);font-size:14px;font-weight:800;cursor:pointer;display:grid;place-items:center}
+  .ln-x:hover{background:#FCE4EA;color:#C2334D}
   .lnr{grid-area:r;font-size:13.5px;display:flex;align-items:center;gap:6px}
   .lnr s{color:var(--muted)}
   .lnr i{font-style:normal;padding:2px 8px;border-radius:8px;background:#FF2E7E;color:#fff;font-weight:800;font-size:12.5px}
@@ -3038,6 +3042,16 @@
             const y = window.scrollY; renderPlan(l, box, res); window.scrollTo(0, y);
           }));
           ln.prepend(fotoMini(x.p.imagen || x.it.img, 'pthumb'));
+          // ✕ arriba a la derecha: saca el producto de la lista (con confirmación)
+          const qx = document.createElement('button'); qx.type = 'button'; qx.className = 'ln-x'; qx.textContent = '✕';
+          const nomQx = (!(k in SUPERS) && x.it.name) || x.p.nombre || x.it.name;
+          qx.setAttribute('aria-label', 'Eliminar ' + nomQx + ' de la lista');
+          qx.addEventListener('click', () => confirmBox('¿Desea eliminar «' + nomQx + '» de la lista?', 'Se saca de «' + (l.name || 'Mi lista') + '». Lo podés volver a agregar cuando quieras.', 'Eliminar', () => {
+            l.items = l.items.filter(i => i !== x.it); saveLists(); renderLists(); if (view === 'listas') renderBuilderItems();
+            const y = window.scrollY; renderPlan(l, box, res); window.scrollTo(0, y);
+            toast('Producto eliminado de la lista');
+          }));
+          ln.appendChild(qx);
           // Como en el mail: precio de lista tachado y % de descuento
           if (x.p.precio_promo && x.p.precio > 0 && x.u < x.p.precio - 0.5) {
             const rg = document.createElement('div'); rg.className = 'lnr';
