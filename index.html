@@ -287,6 +287,12 @@
   .lhead-t{display:flex;flex-direction:column;min-width:0}
   .lhead-t small{color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
   .lhead-t b{font-family:var(--display);font-size:24px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Título de la lista con el color de la sección (sin letras infladas) */
+  :root{--sec1:#A58BFF;--sec2:#6E48F0}
+  .lhead-t{flex-direction:row!important;align-items:center;gap:12px}
+  .lname-ic{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,var(--sec1),var(--sec2));box-shadow:0 8px 16px -10px var(--sec2), inset 0 2px 0 rgba(255,255,255,.35)}
+  .lname-ic svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+  .lhead-t b#lName{font-family:var(--display);font-weight:800;font-size:27px;letter-spacing:-.015em;background:linear-gradient(120deg,var(--sec1),var(--sec2));-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:2px}
   .lmenu-btn{flex:none;padding:9px 12px;font-size:14px}
   .lhead-b{display:flex;gap:8px;flex:none}
   .lshare-btn{flex:none;padding:9px 12px;font-size:14px;background:#25D366;color:#fff;box-shadow:0 4px 0 #128C7E}
@@ -1017,7 +1023,7 @@
 </div>
   <section class="card" id="builder" data-view="listas">
     <div class="lhead">
-      <div class="lhead-t"><b id="lName">Mi lista</b></div>
+      <div class="lhead-t"><span class="lname-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></span><b id="lName">Mi lista</b></div>
       <div class="lhead-b"><button type="button" class="btn lshare-btn" id="lShareBtn" aria-label="Compartir esta lista"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Compartir</button>
       <button type="button" class="btn btn-ghost lmenu-btn" id="lMenuBtn" aria-expanded="false" aria-controls="lMenu">Mis listas</button></div>
     </div>
@@ -1349,6 +1355,7 @@
 <script>
   // ---------- Mundo Apple es una app aparte (tecno-cart.vercel.app/apple): mismo motor, su propio nombre, logo y colores ----------
   const APP_APPLE = /^\/apple\/?$/.test(location.pathname) || new URLSearchParams(location.search).get('apple') === '1';
+  if (APP_APPLE) { document.documentElement.style.setProperty('--sec1', '#FF8F6B'); document.documentElement.style.setProperty('--sec2', '#E5432A'); }
   if (APP_APPLE) {
     document.title = 'Mundo Apple';
     document.body.classList.add('app-apple');
