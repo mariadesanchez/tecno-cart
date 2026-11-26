@@ -308,7 +308,7 @@
   .lmenu-acts .btn{padding:10px;font-size:14px;justify-content:center;text-align:center}
   .lmenu-acts .lm-share{display:flex;align-items:center;gap:6px;text-decoration:none}
   .lmenu-acts .lm-share svg{width:18px;height:18px}
-  .add-more{border-style:dashed}
+  .btn.add-more{background:linear-gradient(#FF6FA5,var(--grape));color:#fff;border:0;border-bottom:4px solid var(--grape-deep);font-weight:900;font-size:17px;box-shadow:0 8px 16px -10px rgba(160,10,70,.7)}
   .ltop{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
   .ltop .btn{padding:14px 10px;font-size:16px;justify-content:center;text-align:center}
   #bPlan{margin-top:6px}
@@ -469,7 +469,10 @@
   .opts-t{margin-top:14px}
   .ahorro-ln{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed color-mix(in srgb, var(--tag) 60%, var(--line))}
   .ahorro-ln span{font-weight:700;color:#1F8A4C;font-size:14px}
-  .ahorro-btn{border:0;border-radius:12px;padding:8px 12px;font:inherit;font-weight:800;font-size:14px;background:var(--ink);color:var(--card);cursor:pointer}
+  .ahorro-btn{border:0;border-radius:14px;padding:11px 20px;font:inherit;font-weight:900;font-size:16px;color:#fff;background-color:#7CB342;background-image:linear-gradient(#A5D16B,#7CB342);border-bottom:4px solid #5E8F2A;box-shadow:0 8px 16px -10px rgba(60,100,20,.7);cursor:pointer}
+  /* El total del carrito más conveniente, bien visible */
+  .opt.multi .resumen h4{align-items:baseline}
+  .opt.multi .resumen h4 span:last-child{font-size:27px;font-weight:900;letter-spacing:-.01em}
   .ah-list{display:grid;gap:10px;padding:6px 0}
   .ah-lbl{font-size:13px;font-weight:800;color:var(--muted);margin-top:6px}
   .ah-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
@@ -944,7 +947,7 @@
 </div>
   <section class="card" id="builder" data-view="listas">
     <div class="lhead">
-      <div class="lhead-t"><small>Mi lista</small><b id="lName">Mi lista</b></div>
+      <div class="lhead-t"><b id="lName">Mi lista</b></div>
       <div class="lhead-b"><button type="button" class="btn lshare-btn" id="lShareBtn" aria-label="Compartir esta lista"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Compartir</button>
       <button type="button" class="btn btn-ghost lmenu-btn" id="lMenuBtn" aria-expanded="false" aria-controls="lMenu">Mis listas</button></div>
     </div>
@@ -970,7 +973,7 @@
     </form>
     </div>
     <div class="ltop">
-      <button type="button" class="btn btn-ghost add-more" id="bAddMore">+ Agregar productos</button>
+      <button type="button" class="btn btn-ghost add-more" id="bAddMore">+ Productos</button>
       <button type="button" class="btn btn-primary" id="bRun">Comparar precios</button>
     </div>
     <div class="plan" id="bPlan" hidden></div>
@@ -2939,7 +2942,6 @@
       o.innerHTML = `<h4><span></span><span>${fmt(op.total)}</span></h4><div class="os"></div>`;
       o.querySelector('h4 span').textContent = op.titulo;
       o.querySelector('.os').innerHTML = op.sub;
-      if (idx === 0) { const b = document.createElement('span'); b.className = 'bestTag'; b.textContent = 'Más barato'; o.querySelector('.os').prepend(b); }
       if (multi) { const rs = document.createElement('div'); rs.className = 'resumen'; rs.append(o.querySelector('h4'), o.querySelector('.os')); o.prepend(rs); }
       let sepPuesto = false;
       op.grupos.forEach(([k, g]) => {
@@ -3069,7 +3071,7 @@
     const PL = SUPERS.coto ? 'súper' : 'tiendas';
     // 1) El carrito más conveniente
     const mejor = { titulo: 'Tu carrito más conveniente', total: comboTotal, grupos: [...combo.entries()].sort((a, b) => (!!a[1].otra - !!b[1].otra) || b[1].total - a[1].total),
-      sub: combo.size > 1 ? 'Combinando ' + combo.size + ' ' + ([...combo.values()].some(g => g.otra) ? 'tiendas, del súper y de farmacias' : PL) + ': cada producto donde está más barato.' : 'Todo en ' + SUPERS[[...combo.keys()][0]] + ' es lo más barato.' };
+      sub: combo.size > 1 ? 'Combinando ' + combo.size + ' ' + 'tiendas' + '' : 'Todo en ' + SUPERS[[...combo.keys()][0]] + ' es lo más barato.' };
     box.appendChild(tarjetaOpcion(mejor, 0));
     // ¿Vale la pena ir a varios súper? Ahorro frente a comprar todo en uno (el más barato con todo, o el que elijas)
     if (combo.size > 1) {
@@ -3098,7 +3100,7 @@
           ln.children[0].textContent = 'Ahorrás ' + fmt(baseInicial.total - comboTotal) + ' frente a comprar todo en ' + nomT(baseInicial.k) + ' (' + fmt(baseInicial.total) + ').';
         }
         const vb = document.createElement('button'); vb.type = 'button'; vb.className = 'ahorro-btn';
-        vb.textContent = baseInicial ? 'Ver de dónde sale el ahorro' : 'Ver las ofertas de tu carrito';
+        vb.textContent = baseInicial ? 'Mis ahorros' : 'Ver las ofertas de tu carrito';
         vb.addEventListener('click', () => verAhorro(baseInicial));
         ln.appendChild(vb);
         if (rs) rs.appendChild(ln);
