@@ -6,7 +6,7 @@
   const SECCIONES = [
     { id: 'inicio', nombre: 'Tus Carts', sub: 'Todas las apps', url: 'https://tus-carts.vercel.app', color: '#5B5BD6', ico: '🏠' },
     { id: 'super', nombre: 'Super Cart', sub: 'Coto, Carrefour, ChangoMás, Día', url: 'https://compras-super-cart.vercel.app', color: '#22A55B', ico: '🛒' },
-    { id: 'belleza', nombre: 'Belleza & Perfu', sub: 'Perfumería y belleza', url: 'https://perfu-cart.vercel.app', color: '#B43FC0', ico: '' },
+    { id: 'belleza', nombre: 'Belleza & Perfu', sub: 'Perfumes y belleza', url: 'https://perfu-cart.vercel.app', color: '#B43FC0', ico: '' },
     { id: 'tecno', nombre: 'Tecno Cart', sub: 'Tecnología y electro', url: 'https://tecno-cart.vercel.app', color: '#7B5CFF', ico: '📺' },
     { id: 'apple', nombre: 'Mundo Apple', sub: 'iPhone, iPad, Mac, AirPods', url: 'https://tecno-cart.vercel.app/apple', color: '#F0603F', ico: '' },
     { id: 'juguetes', nombre: 'Juguetes Cart', sub: 'Cebra, Kinderland y LEGO', url: JYD + '/juguetes', color: '#F28C00', ico: '🧸' },
