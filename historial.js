@@ -321,8 +321,12 @@
       const b = el('div', 'tcm-b'); b.appendChild(el('div', 'tcm-n', p.name));
       if (a) {
         const mn = el('div', 'tcm-min'); mn.appendChild(el('span', 'tcm-v', '✓ ' + fmt(a.min)));
-        const donde = a.vent.slice(0, 3).map(w => nom(w.k) + ' ' + rangoCorto(w.a, w.b));
-        mn.appendChild(el('span', '', 'en ' + donde.join(' · ') + (a.vent.length > 3 ? ' y más' : '')));
+        // Por tienda, con todos sus tramos: "Día del 20/11 al 23/11 y desde el 25/11 hasta hoy"
+        const hoyF = a.actual ? a.fin : null, porK = [];
+        a.vent.forEach(w => { let g = porK.find(x => x.k === w.k); if (!g) porK.push(g = { k: w.k, ws: [] }); g.ws.push(w); });
+        const tramo = w => (hoyF && w.b === hoyF) ? (w.a === w.b ? 'hoy' : 'desde el ' + ddmm(w.a) + ' hasta hoy') : rangoCorto(w.a, w.b);
+        const donde = porK.slice(0, 3).map(g => nom(g.k) + ' ' + g.ws.sort((x, y) => (x.a < y.a ? -1 : 1)).slice(0, 3).map(tramo).join(' y '));
+        mn.appendChild(el('span', '', 'en ' + donde.join(' · ') + (porK.length > 3 ? ' y otras' : '')));
         b.appendChild(mn);
         const h = el('div', 'tcm-h');
         if (a.hoy && a.actual) {
