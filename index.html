@@ -3161,6 +3161,7 @@
               ln.appendChild(c);
             }
           }
+          if (window.tcHistorial) { const hb = tcHistorial.boton(x.p.ean || x.it.ean, x.p.nombre || x.it.name, x.p.imagen || x.it.img); if (hb.classList) hb.classList.add('tch-ln'); ln.appendChild(hb); }
           d.appendChild(ln);
         });
         o.appendChild(d);
@@ -3674,6 +3675,7 @@
       } else lp.textContent = itemStatus(it) ? 'No incorporado a la lista: no suma al total' : 'Sin precio: tocá Actualizar';
       sp.appendChild(lp);
       lineaHistorial(it, sp);
+      if (window.tcHistorial) sp.appendChild(tcHistorial.boton(it.ean, it.name, it.img));
       const st = itemStatus(it), S = it.statusSup || it.sup || 'esta tienda';
       if (st === 'notfound' || st === 'nostock' || st === 'error') {
         const w = document.createElement('span'); w.className = 'warn' + (st === 'error' ? ' err' : '');
@@ -4296,6 +4298,7 @@
       const c = await (await fetch('/api/config')).json();
       if (!c.url || !c.anon || !window.supabase) throw new Error('sin-config');
       sb = window.supabase.createClient(c.url, c.anon, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } });
+      window.tcSb = sb;   // para el historial de precios (historial.js)
       sb.auth.onAuthStateChange((ev, session) => { setTimeout(() => onSession(session), 0); });
       const codigo = new URLSearchParams(location.search).get('code');
       if (codigo) gateBusy(true);
@@ -4775,6 +4778,7 @@
   initSupabase().then(() => { convertirListaVieja(); return errorDeIngreso() || handleLinks(); });
 })();
 </script>
+<script src="/historial.js"></script>
 <script src="/nav-carts.js"></script>
 </body>
 </html>
