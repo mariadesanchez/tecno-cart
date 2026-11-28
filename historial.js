@@ -32,7 +32,7 @@
   .tch-m{position:relative;width:min(560px,100%);max-height:min(88vh,760px);overflow:auto;background:var(--card,#fff);color:var(--ink,#1b2140);border-radius:22px;
     box-shadow:0 20px 60px rgba(0,0,0,.35);padding:18px 18px 16px}
   .tch-x{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:0;background:var(--line,#eee);color:var(--ink,#222);font-size:17px;cursor:pointer}
-  .tch-hd{display:flex;gap:12px;align-items:center;padding-right:36px}
+  .tch-hd{display:flex;gap:12px;align-items:center;padding-right:40px}
   .tch-ph{flex:none;width:64px;height:64px;border-radius:12px;background:#fff;border:1px solid var(--line,#eee);display:grid;place-items:center;overflow:hidden}
   .tch-ph img{max-width:90%;max-height:90%;object-fit:contain}
   .tch-t{font-weight:800;font-size:16.5px;line-height:1.25}
@@ -57,11 +57,11 @@
   .tch-tab .of{color:#be185d;font-size:11.5px;font-weight:700}
   .tch-n{color:var(--muted,#777);font-size:12.5px;margin-top:10px;line-height:1.4}
   .tch-msg{padding:26px 10px;text-align:center;color:var(--muted,#777)}
-  .tch-voz{appearance:none;border:0;cursor:pointer;margin:12px 0 2px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
-    background:linear-gradient(180deg,#F25C9B,#E2367F);color:#fff;font:inherit;font-weight:800;font-size:15px;border-radius:14px;padding:11px 14px;box-shadow:0 3px 0 #b3165d}
+  .tch-voz{appearance:none;border:0;cursor:pointer;flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(180deg,#F25C9B,#E2367F);color:#fff;box-shadow:0 3px 0 #b3165d;padding:0;margin-left:auto;align-self:center}
   .tch-voz:active{transform:translateY(2px);box-shadow:0 1px 0 #b3165d}
   .tch-voz.on{background:linear-gradient(180deg,#6b6878,#4b4858);box-shadow:0 3px 0 #33313d}
-  .tch-voz svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .tch-voz svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   .tch-exp{background:var(--bg,#f7f4fa);border-radius:14px;padding:12px 14px;margin-top:8px;font-size:14.5px;line-height:1.55}
   .tch-exp p{margin:0 0 8px}.tch-exp p:last-child{margin:0}
   .tch-exp p.rec{font-weight:700;color:var(--ink,#1b2140);border-top:1px dashed var(--line,#ddd);padding-top:8px}
@@ -143,7 +143,7 @@
       partes.forEach(pt => { const p = el('p', pt.rec ? 'rec' : '', pt.txt); exp.appendChild(p); });
       const icoOn = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
       const icoOff = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
-      const pintarB = on => { vb.classList.toggle('on', on); vb.innerHTML = (on ? icoOff : icoOn) + '<span>' + (on ? 'Detener' : 'Escuchar la explicación') + '</span>'; };
+      const pintarB = on => { vb.classList.toggle('on', on); vb.innerHTML = on ? icoOff : icoOn; const t = on ? 'Detener' : 'Escuchar la explicación'; vb.title = t; vb.setAttribute('aria-label', t); };
       pintarB(false);
       vb.addEventListener('click', () => {
         exp.hidden = false;
@@ -151,7 +151,8 @@
         const ok = decir(partes, exp, () => pintarB(false));
         pintarB(ok);
       });
-      cuerpo.append(vb, exp);
+      const hd0 = abierto && abierto.querySelector('.tch-hd'); if (hd0) hd0.appendChild(vb); else cuerpo.appendChild(vb);
+      cuerpo.appendChild(exp);
     }
 
     // Gráfico: un escalón por tienda (el precio se mantiene desde "fecha" hasta "hasta"; si no se vio, la línea se corta)
@@ -280,9 +281,18 @@
   const voz = () => window.speechSynthesis;
   const hablando = () => !!(voz() && (voz().speaking || voz().pending));
   function callar(){ try { if (voz()) voz().cancel(); } catch (e) {} if (abierto) abierto.querySelectorAll('.tch-exp p.hab').forEach(p => p.classList.remove('hab')); }
+  // Se elige la mejor voz femenina en español que tenga el equipo: primero las "naturales" (Edge: Elena de Argentina,
+  // Dalia; Chrome: la de Google; iPhone/Mac: Paulina o Mónica en calidad mejorada) y nunca las masculinas ni las de efectos.
+  const FEM = /elena|dalia|paloma|elvira|ximena|camila|valentina|sofia|sofía|lucia|lucía|paulina|m[oó]nica|marisol|francisca|helena|laura|sabina|angelica|angélica|soledad|esperanza|isabela|catalina|google espa|female|mujer/i;
+  const MASC = /jorge|diego|tom[aá]s|[aá]lvaro|pablo|ra[uú]l|juan|carlos|enrique|alonso|gerardo|jorge|eddy|reed|rocko|grandpa|abuelo|male\b|hombre|lorenzo|tito|andr[eé]s/i;
+  const RARA = /grandma|grandpa|shelley|sandy|rocko|reed|eddy|flo\b|bells|boing|bubbles|cellos|whisper|zarvox|trinoids|organ|bad news|good news|jester|superstar|wobble|albert|bahh|fred|junior|ralph|kathy/i;
   function vozEs(){
-    const vs = (voz() && voz().getVoices()) || [];
-    return vs.find(x => /^es[-_]AR/i.test(x.lang)) || vs.find(x => /^es[-_](419|US|MX|UY|CL|CO)/i.test(x.lang)) || vs.find(x => /^es/i.test(x.lang)) || null;
+    const vs = ((voz() && voz().getVoices()) || []).filter(x => /^es/i.test(x.lang) && !RARA.test(x.name));
+    if (!vs.length) return null;
+    const pts = x => (FEM.test(x.name) ? 50 : 0) - (MASC.test(x.name) ? 100 : 0)
+      + (/natural|neural|online/i.test(x.name) ? 30 : 0) + (/premium|enhanced|mejorad/i.test(x.name) ? 25 : 0) + (/google/i.test(x.name) ? 12 : 0)
+      + (/^es[-_]AR/i.test(x.lang) ? 10 : /^es[-_](419|US|MX|UY|CL|CO)/i.test(x.lang) ? 6 : 0) + (x.localService === false ? 3 : 0);
+    return vs.slice().sort((a, b) => pts(b) - pts(a))[0];
   }
   const paraDecir = t => t.replace(/\$ ?([\d.]+)/g, (m, n) => n.replace(/\./g, '') + ' pesos').replace(/(\d+)%/g, '$1 por ciento').replace(/\boff\b/gi, 'de descuento').replace(/\bDto\b/g, ' de descuento');
   function decir(partes, exp, alTerminar){
@@ -291,7 +301,7 @@
     const ps = [...exp.querySelectorAll('p')], vz = vozEs();
     partes.forEach((pt, i) => {
       const u = new SpeechSynthesisUtterance(paraDecir(pt.txt));
-      u.lang = vz ? vz.lang : 'es-AR'; if (vz) u.voice = vz; u.rate = 1.02;
+      u.lang = vz ? vz.lang : 'es-AR'; if (vz) u.voice = vz; u.rate = 0.97; u.pitch = 1.05;
       u.onstart = () => { ps.forEach(p => p.classList.remove('hab')); if (ps[i]) { ps[i].classList.add('hab'); ps[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } };
       if (i === partes.length - 1) u.onend = u.onerror = () => { ps.forEach(p => p.classList.remove('hab')); alTerminar(); };
       voz().speak(u);
