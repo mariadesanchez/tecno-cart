@@ -17,7 +17,7 @@
   const nom = k => NOMBRES[k] || (k ? k.charAt(0).toUpperCase() + k.slice(1) : '');
   const fmt = n => '$ ' + Math.round(n).toLocaleString('es-AR');
   const ddmm = iso => { const [, m, d] = String(iso).split('-'); return d + '/' + m; };
-  const dia = iso => Math.round(new Date(iso + 'T12:00:00').getTime() / 864e5);
+  const dia = iso => Math.round(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 864e5);
   const hoyIso = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
@@ -38,20 +38,21 @@
   .tch-t{font-weight:800;font-size:16.5px;line-height:1.25}
   .tch-s{color:var(--muted,#777);font-size:13px;margin-top:2px}
   .tch-res{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 6px}
-  .tch-k{background:var(--bg,#f7f4fa);border-radius:14px;padding:9px 10px;text-align:center}
-  .tch-k small{display:block;color:var(--muted,#777);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
-  .tch-k b{display:block;font-size:17px;margin-top:2px}
+  .tch-k{background:var(--bg,#f7f4fa);border-radius:14px;padding:9px 6px;text-align:center;min-width:0}
+  .tch-k small{display:block;white-space:nowrap;color:var(--muted,#777);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+  .tch-k b{display:block;font-size:16px;margin-top:2px;white-space:nowrap}
   .tch-k em{display:block;font-style:normal;color:var(--muted,#777);font-size:11.5px}
   .tch-k.low b{color:#15803d}
   .tch-k.high b{color:#be185d}
   .tch-g{margin-top:8px;width:100%;height:auto;display:block;overflow:visible}
-  .tch-g text{font:11px system-ui,sans-serif;fill:var(--muted,#777)}
+  .tch-g text{font:12px system-ui,sans-serif;fill:var(--muted,#777)}
   .tch-ley{display:flex;flex-wrap:wrap;gap:6px 12px;margin:6px 0 4px;font-size:13px}
   .tch-ley span{display:inline-flex;align-items:center;gap:6px}
   .tch-ley i{width:12px;height:12px;border-radius:50%;display:inline-block}
   .tch-tab{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px}
   .tch-tab th{text-align:left;color:var(--muted,#777);font-weight:600;font-size:12px;padding:6px 4px;border-bottom:1px solid var(--line,#eee)}
   .tch-tab td{padding:7px 4px;border-bottom:1px solid var(--line,#eee)}
+  .tch-tab td:not(:first-child){white-space:nowrap}
   .tch-tab td:not(:first-child),.tch-tab th:not(:first-child){text-align:right}
   .tch-tab .of{color:#be185d;font-size:11.5px;font-weight:700}
   .tch-n{color:var(--muted,#777);font-size:12.5px;margin-top:10px;line-height:1.4}
@@ -128,7 +129,7 @@
 
     // Gráfico: un escalón por tienda (el precio se mantiene desde "fecha" hasta "hasta"; si no se vio, la línea se corta)
     const ini = filas.reduce((a, r) => (r.fecha < a ? r.fecha : a), filas[0].fecha), d0 = dia(ini < desde ? desde : ini), d1 = Math.max(dia(fin), d0 + 1);
-    const W = 520, H = 210, L = 58, R = 10, T = 10, B = 26;
+    const W = 380, H = 210, L = 54, R = 8, T = 10, B = 24;
     const span = max.p - min.p || max.p * .1 || 1, ymin = Math.max(0, min.p - span * .12), ymax = max.p + span * .12;
     const X = d => L + (d - d0) / (d1 - d0) * (W - L - R), Y = p => T + (1 - (p - ymin) / (ymax - ymin)) * (H - T - B);
     const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
@@ -140,7 +141,7 @@
       add('line', { x1: L, x2: W - R, y1: y, y2: y, stroke: 'currentColor', 'stroke-opacity': .12 });
       add('text', { x: L - 6, y: y + 4, 'text-anchor': 'end' }, fmt(p).replace('$ ', '$'));
     }
-    const nT = Math.min(5, d1 - d0);
+    const nT = Math.min(4, d1 - d0);
     for (let i = 0; i <= nT; i++) {
       const d = Math.round(d0 + (d1 - d0) * i / nT), iso = new Date(d * 864e5).toISOString().slice(0, 10);
       add('text', { x: X(d), y: H - 6, 'text-anchor': i === 0 ? 'start' : i === nT ? 'end' : 'middle' }, ddmm(iso));
