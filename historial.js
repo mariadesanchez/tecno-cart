@@ -57,6 +57,15 @@
   .tch-tab .of{color:#be185d;font-size:11.5px;font-weight:700}
   .tch-n{color:var(--muted,#777);font-size:12.5px;margin-top:10px;line-height:1.4}
   .tch-msg{padding:26px 10px;text-align:center;color:var(--muted,#777)}
+  .tch-voz{appearance:none;border:0;cursor:pointer;margin:12px 0 2px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:linear-gradient(180deg,#F25C9B,#E2367F);color:#fff;font:inherit;font-weight:800;font-size:15px;border-radius:14px;padding:11px 14px;box-shadow:0 3px 0 #b3165d}
+  .tch-voz:active{transform:translateY(2px);box-shadow:0 1px 0 #b3165d}
+  .tch-voz.on{background:linear-gradient(180deg,#6b6878,#4b4858);box-shadow:0 3px 0 #33313d}
+  .tch-voz svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .tch-exp{background:var(--bg,#f7f4fa);border-radius:14px;padding:12px 14px;margin-top:8px;font-size:14.5px;line-height:1.55}
+  .tch-exp p{margin:0 0 8px}.tch-exp p:last-child{margin:0}
+  .tch-exp p.rec{font-weight:700;color:var(--ink,#1b2140);border-top:1px dashed var(--line,#ddd);padding-top:8px}
+  .tch-exp p.hab{background:color-mix(in srgb,#E2367F 14%,transparent);border-radius:8px;padding:2px 6px;margin-left:-6px;margin-right:-6px}
   .tch-tip{position:absolute;pointer-events:none;background:var(--ink,#222);color:var(--card,#fff);font-size:12px;border-radius:8px;padding:5px 8px;white-space:nowrap;transform:translate(-50%,-110%)}
   `;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
@@ -76,7 +85,7 @@
   }
 
   let abierto = null;
-  function cerrar(){ if (abierto) { abierto.remove(); abierto = null; document.removeEventListener('keydown', esc); } }
+  function cerrar(){ callar(); if (abierto) { abierto.remove(); abierto = null; document.removeEventListener('keydown', esc); } }
   function esc(e){ if (e.key === 'Escape') cerrar(); }
 
   async function abrir(ean, nombre, img){
@@ -126,6 +135,24 @@
     kpi('low', 'Más bajo', fmt(min.p), nom(min.r.super) + ' · ' + ddmm(min.r.fecha));
     kpi('high', 'Más alto', fmt(max.p), nom(max.r.super) + ' · ' + ddmm(max.r.fecha));
     cuerpo.appendChild(res);
+    const ini0 = filas.reduce((a, r) => (r.fecha < a ? r.fecha : a), filas[0].fecha);
+    const partes = explicar(filas, porT, v, fin, ini0 < desde ? desde : ini0, act, min, max);
+    if (partes.length) {
+      const vb = el('button', 'tch-voz'); vb.type = 'button';
+      const exp = el('div', 'tch-exp'); exp.hidden = true;
+      partes.forEach(pt => { const p = el('p', pt.rec ? 'rec' : '', pt.txt); exp.appendChild(p); });
+      const icoOn = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+      const icoOff = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+      const pintarB = on => { vb.classList.toggle('on', on); vb.innerHTML = (on ? icoOff : icoOn) + '<span>' + (on ? 'Detener' : 'Escuchar la explicación') + '</span>'; };
+      pintarB(false);
+      vb.addEventListener('click', () => {
+        exp.hidden = false;
+        if (hablando()) { callar(); pintarB(false); return; }
+        const ok = decir(partes, exp, () => pintarB(false));
+        pintarB(ok);
+      });
+      cuerpo.append(vb, exp);
+    }
 
     // Gráfico: un escalón por tienda (el precio se mantiene desde "fecha" hasta "hasta"; si no se vio, la línea se corta)
     const ini = filas.reduce((a, r) => (r.fecha < a ? r.fecha : a), filas[0].fecha), d0 = dia(ini < desde ? desde : ini), d1 = Math.max(dia(fin), d0 + 1);
@@ -182,6 +209,96 @@
     const desdeTxt = ddmm(ini);
     cuerpo.appendChild(el('div', 'tch-n', `Precios online guardados todos los días desde el ${desdeTxt}. Los puntos marcan los días con oferta. Precio con la oferta aplicada (en promos de “llevando N”, el precio por unidad llevando N).`));
   }
+
+  // ---------- Explicación en palabras (y en voz alta) de lo que pasó con el precio ----------
+  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const fechaL = iso => +iso.slice(8, 10) + ' de ' + MESES[+iso.slice(5, 7) - 1];
+  const isoDe = d => new Date(d * 864e5).toISOString().slice(0, 10);
+  const pct = (a, b) => Math.round((a / b - 1) * 100);
+  const lista = xs => xs.length <= 1 ? (xs[0] || '') : xs.slice(0, -1).join(', ') + ' y ' + xs[xs.length - 1];
+  function rango(a, b){
+    if (a === b) return 'el ' + fechaL(a);
+    if (a.slice(5, 7) === b.slice(5, 7)) return 'del ' + (+a.slice(8, 10)) + ' al ' + fechaL(b);
+    return 'del ' + fechaL(a) + ' al ' + fechaL(b);
+  }
+  function explicar(filas, porT, v, fin, ini, act, min, max){
+    const out = [], tiendas = [...porT.keys()];
+    const dIni = dia(ini), dFin = dia(fin);
+    out.push({ txt: `Desde el ${fechaL(ini)} seguimos este producto en ${tiendas.length === 1 ? nom(tiendas[0]) : tiendas.length + ' tiendas: ' + lista(tiendas.map(nom))}.` });
+    // Hoy
+    const vAct = v(act.r), conOf = act.r.precio_promo && act.r.precio_promo < act.r.precio - 0.5;
+    out.push({ txt: `${dia(fin) >= dia(hoyIso()) - 1 ? 'Hoy' : 'Lo último que vimos, el ' + fechaL(fin) + ','} el más barato está en ${nom(act.k)}, a ${fmt(vAct)}` + (conOf ? `, con oferta (${String(act.r.promo || 'descuento').split(' · ')[0]}).` : '.') });
+    // Quién fue el más barato cada día, agrupado en tramos
+    const tramos = [];
+    for (let d = dIni; d <= dFin; d++) {
+      let mejor = null;
+      tiendas.forEach(k => { const r = porT.get(k).find(x => dia(x.fecha) <= d && d <= dia(x.hasta)); if (r && (!mejor || v(r) < mejor.p - 0.5)) mejor = { k, p: v(r) }; });
+      if (!mejor) continue;
+      const u = tramos[tramos.length - 1];
+      if (u && u.k === mejor.k && u.b === d - 1) u.b = d; else tramos.push({ k: mejor.k, a: d, b: d });
+    }
+    if (tiendas.length > 1 && tramos.length) {
+      if (tramos.length === 1) out.push({ txt: `${nom(tramos[0].k)} fue siempre el más barato, todos los días.` });
+      else {
+        const frases = tramos.slice(0, 5).map(t => `${nom(t.k)} ${rango(isoDe(t.a), isoDe(t.b))}`);
+        out.push({ txt: `El más barato fue cambiando: ${lista(frases)}${tramos.length > 5 ? ', entre otros cambios' : ''}.` });
+      }
+      // La tienda que más días lo tuvo más barato
+      const dias = {}; tramos.forEach(t => { dias[t.k] = (dias[t.k] || 0) + t.b - t.a + 1; });
+      const tot = Object.values(dias).reduce((a, b) => a + b, 0), top = Object.entries(dias).sort((a, b) => b[1] - a[1])[0];
+      if (tramos.length > 1 && top && tot >= 4) out.push({ txt: `${nom(top[0])} fue la tienda que más días lo tuvo más barato: ${top[1]} de ${tot}.`, top: top[0], share: top[1] / tot });
+    }
+    // Qué pasó en cada tienda
+    tiendas.forEach(k => {
+      const rs = porT.get(k), a = v(rs[0]), b = v(rs[rs.length - 1]), nOf = rs.filter(r => r.precio_promo && r.precio_promo < r.precio - 0.5).length;
+      const mn = Math.min(...rs.map(v)), mx = Math.max(...rs.map(v));
+      let t;
+      if (mx - mn < Math.max(1, mn * 0.01)) t = `En ${nom(k)} se mantuvo en ${fmt(b)}`;
+      else if (b > a * 1.02) t = `En ${nom(k)} subió de ${fmt(a)} a ${fmt(b)}, un ${pct(b, a)}% más`;
+      else if (b < a * 0.98) t = `En ${nom(k)} bajó de ${fmt(a)} a ${fmt(b)}, un ${-pct(b, a)}% menos`;
+      else t = `En ${nom(k)} varió entre ${fmt(mn)} y ${fmt(mx)}, y hoy está en ${fmt(b)}`;
+      if (nOf && nOf === rs.length) t += ', siempre con oferta'; else if (nOf) t += nOf === 1 ? ', con una oferta en el período' : `, con ${nOf} ofertas en el período`;
+      if (rs[rs.length - 1].hasta !== fin) t += `. No lo vemos desde el ${fechaL(rs[rs.length - 1].hasta)}`;
+      out.push({ txt: t + '.' });
+    });
+    // Recomendación
+    const sobreMin = vAct / min.p - 1;
+    let rec;
+    if (sobreMin <= 0.02) rec = `Buen momento para comprar: ${fmt(vAct)} es el precio más bajo que vimos desde el ${fechaL(ini)}.`;
+    else if (sobreMin <= 0.08) rec = `Está cerca de su mínimo (${fmt(min.p)}, en ${nom(min.r.super)} el ${fechaL(min.r.fecha)}): comprarlo hoy en ${nom(act.k)} es razonable.`;
+    else {
+      rec = `Hoy está un ${Math.round(sobreMin * 100)}% arriba del precio más bajo que vimos (${fmt(min.p)}, en ${nom(min.r.super)} el ${fechaL(min.r.fecha)}).`;
+      const ofs = filas.filter(r => r.precio_promo && r.precio_promo < r.precio - 0.5).length;
+      rec += ofs >= 2 ? ' Si no lo necesitás ya, conviene esperar: suele entrar en oferta.' : ' Si podés esperar unos días, quizás baje.';
+    }
+    const top = out.find(x => x.top);
+    if (top && top.share >= 0.6 && top.top !== act.k) rec += ` Para tener en cuenta: ${nom(top.top)} suele ser la más barata para este producto.`;
+    out.push({ txt: rec, rec: true });
+    return out;
+  }
+  // Voz: la del celular o la compu (Web Speech), en español. Los precios se dicen como números enteros.
+  const voz = () => window.speechSynthesis;
+  const hablando = () => !!(voz() && (voz().speaking || voz().pending));
+  function callar(){ try { if (voz()) voz().cancel(); } catch (e) {} if (abierto) abierto.querySelectorAll('.tch-exp p.hab').forEach(p => p.classList.remove('hab')); }
+  function vozEs(){
+    const vs = (voz() && voz().getVoices()) || [];
+    return vs.find(x => /^es[-_]AR/i.test(x.lang)) || vs.find(x => /^es[-_](419|US|MX|UY|CL|CO)/i.test(x.lang)) || vs.find(x => /^es/i.test(x.lang)) || null;
+  }
+  const paraDecir = t => t.replace(/\$ ?([\d.]+)/g, (m, n) => n.replace(/\./g, '') + ' pesos').replace(/(\d+)%/g, '$1 por ciento').replace(/\boff\b/gi, 'de descuento').replace(/\bDto\b/g, ' de descuento');
+  function decir(partes, exp, alTerminar){
+    if (!voz() || typeof SpeechSynthesisUtterance === 'undefined') { alTerminar(); return false; }
+    callar();
+    const ps = [...exp.querySelectorAll('p')], vz = vozEs();
+    partes.forEach((pt, i) => {
+      const u = new SpeechSynthesisUtterance(paraDecir(pt.txt));
+      u.lang = vz ? vz.lang : 'es-AR'; if (vz) u.voice = vz; u.rate = 1.02;
+      u.onstart = () => { ps.forEach(p => p.classList.remove('hab')); if (ps[i]) { ps[i].classList.add('hab'); ps[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } };
+      if (i === partes.length - 1) u.onend = u.onerror = () => { ps.forEach(p => p.classList.remove('hab')); alTerminar(); };
+      voz().speak(u);
+    });
+    return true;
+  }
+  try { if (voz()) { voz().getVoices(); voz().onvoiceschanged = () => voz().getVoices(); } } catch (e) {}
 
   // Link desde el mail: ?hist=<ean>&hn=<nombre>. Se guarda por si hay que iniciar sesión, y se abre cuando la sesión está lista.
   try {
