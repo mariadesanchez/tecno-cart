@@ -894,7 +894,7 @@
 </style>
 </head>
 <body class="gated">
-<div class="ticker" aria-hidden="true" data-view="inicio"><div class="run"><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Carrefour, ChangoMás, Jumbo, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, On City, Carrefour, ChangoMás, Jumbo, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span></div></div>
+<div class="ticker" aria-hidden="true" data-view="inicio"><div class="run"><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, Carrefour, ChangoMás, Jumbo, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span><span>📱 Celulares, notebooks, TV y electro, al mejor precio</span><span>🔌 Todos los precios en un solo lugar</span><span>💳 Precio de contado y cuotas sin interés</span><span>🏷️ Naldo, Cetrogar, Carrefour, ChangoMás, Jumbo, Rodó, Samsung, Motorola, iPoint y MacStation</span><span>📧 Tu lista con los precios de hoy, en tu mail</span></div></div>
 <header class="hero" id="hero" data-view="inicio">
   <div class="hero-in">
     <div class="brand"><span class="badge" id="netBadge" hidden>Sin conexión</span></div>
@@ -982,7 +982,7 @@
       <label class="of-to">Agregar a <select id="ofList" aria-label="Lista donde se agregan las ofertas"></select></label>
     </div>
     <div class="of-tiendas" id="ofTiendas" role="tablist" aria-label="Tienda">
-      <button type="button" data-t="naldo">Naldo</button><button type="button" data-t="cetrogar">Cetrogar</button><button type="button" data-t="oncity">On City</button><button type="button" data-t="samsung">Samsung</button><button type="button" data-t="motorola">Motorola</button>
+      <button type="button" data-t="naldo">Naldo</button><button type="button" data-t="cetrogar">Cetrogar</button><button type="button" data-t="samsung">Samsung</button><button type="button" data-t="motorola">Motorola</button>
     </div>
     <div class="card of-card">
       <div class="of-search">
@@ -1027,6 +1027,7 @@
       <div class="lhead-b"><button type="button" class="btn lshare-btn" id="lShareBtn" aria-label="Compartir esta lista"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Compartir</button>
       <button type="button" class="btn btn-ghost lmenu-btn" id="lMenuBtn" aria-expanded="false" aria-controls="lMenu">Mis listas</button></div>
     </div>
+    <button type="button" class="mejores-btn" id="bMejores"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>Mejores precios</button>
     <div class="lmenu" id="lMenu" hidden>
       <label for="bList">Cambiar de lista</label>
       <select id="bList"></select>
@@ -1082,7 +1083,6 @@
     <div class="seg" id="superSel" role="tablist" aria-label="Tienda" style="margin-top:12px" hidden>
       <button type="button" role="tab" data-super="naldo">Naldo</button>
       <button type="button" role="tab" data-super="cetrogar">Cetrogar</button>
-      <button type="button" role="tab" data-super="oncity">On City</button>
       <button type="button" role="tab" data-super="samsung">Samsung</button>
       <button type="button" role="tab" data-super="motorola">Motorola</button>
       <button type="button" role="tab" data-super="carrefour">Carrefour</button>
@@ -1193,7 +1193,6 @@
         <div class="ss-supers" id="supersSel">
           <label><input type="checkbox" value="naldo"><span>Naldo</span></label>
           <label><input type="checkbox" value="cetrogar"><span>Cetrogar</span></label>
-          <label><input type="checkbox" value="oncity"><span>On City</span></label>
           <label><input type="checkbox" value="samsung"><span>Samsung</span></label>
           <label><input type="checkbox" value="motorola"><span>Motorola</span></label>
           <label><input type="checkbox" value="rodo"><span>Rodó</span></label>
@@ -1371,7 +1370,7 @@
     }
     const h1 = document.querySelector('#hero h1'); if (h1) h1.textContent = 'Tu Apple, al mejor precio';
     const run = document.querySelector('.ticker .run');
-    if (run) { const fr = ['🍎 iPhone, iPad, Mac, AirPods y Apple Watch', '🔎 El mismo equipo en todas las tiendas', '💳 Precio de contado y cuotas sin interés', '🏷️ iPoint, MacStation, Cetrogar, On City, Naldo y Rodó', '📧 Tu lista con los precios de hoy, en tu mail'];
+    if (run) { const fr = ['🍎 iPhone, iPad, Mac, AirPods y Apple Watch', '🔎 El mismo equipo en todas las tiendas', '💳 Precio de contado y cuotas sin interés', '🏷️ iPoint, MacStation, Cetrogar, Naldo y Rodó', '📧 Tu lista con los precios de hoy, en tu mail'];
       run.innerHTML = ''; fr.concat(fr).forEach(t => { const sp = document.createElement('span'); sp.textContent = t; run.appendChild(sp); }); }
   }
 (function(){
@@ -1577,7 +1576,7 @@
   const SIN_CARRO = { rodo: 1, samsung: 1, motorola: 1, ipoint: 1, macstation: 1 };
   // Cargan el carrito pero después muestran su portada: hay que tocar Carrito
   const VA_A_PORTADA = {};
-  const TIENDA_HOST = { carrefour: 'https://www.carrefour.com.ar', changomas: 'https://www.masonline.com.ar', jumbo: 'https://www.jumbo.com.ar', naldo: 'https://www.naldo.com.ar', cetrogar: 'https://www.cetrogar.com.ar', oncity: 'https://www.oncity.com', fravega: 'https://www.fravega.com', samsung: 'https://shop.samsung.com/ar', motorola: 'https://www.motorola.com.ar', rodo: 'https://www.rodo.com.ar', ipoint: 'https://ipoint.com.ar', macstation: 'https://www.macstation.com.ar' };
+  const TIENDA_HOST = { carrefour: 'https://www.carrefour.com.ar', changomas: 'https://www.masonline.com.ar', jumbo: 'https://www.jumbo.com.ar', naldo: 'https://www.naldo.com.ar', cetrogar: 'https://www.cetrogar.com.ar', fravega: 'https://www.fravega.com', samsung: 'https://shop.samsung.com/ar', motorola: 'https://www.motorola.com.ar', rodo: 'https://www.rodo.com.ar', ipoint: 'https://ipoint.com.ar', macstation: 'https://www.macstation.com.ar' };
   function renderBuy(groups){
     const bx = $('buyBox'); bx.innerHTML = '';
     const SUPER_KEY = superKey();
@@ -1746,7 +1745,7 @@
 
   // ---------- ajustes ----------
   let cfg = Object.assign({ suc: '200', auto: true, super: 'farmaonline' }, store.get('super-ajustes', {}));
-  const SUPERS = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation', carrefour: 'Carrefour', changomas: 'ChangoMás', jumbo: 'Jumbo' };
+  const SUPERS = { naldo: 'Naldo', cetrogar: 'Cetrogar', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation', carrefour: 'Carrefour', changomas: 'ChangoMás', jumbo: 'Jumbo' };
   if (!SUPERS[cfg.super]) cfg.super = 'farmaonline';
   function showCfg(){
     $('cfgSuc').value = cfg.suc || '200';
@@ -2751,7 +2750,7 @@
   }
 
   let planTienda = null;
-  const COLOR_TIENDA = { coto: '#E30613', carrefour: '#1E4B9B', dia: '#E2001A', changomas: '#00A651', jumbo: '#2E9E44', vea: '#D7182A', disco: '#C8102E', naldo: '#E30613', cetrogar: '#0047BB', oncity: '#F15A22', fravega: '#2D2E83', samsung: '#1428A0', motorola: '#001428', rodo: '#D52B1E', ipoint: '#1D1D1F', macstation: '#0071E3' };
+  const COLOR_TIENDA = { coto: '#E30613', carrefour: '#1E4B9B', dia: '#E2001A', changomas: '#00A651', jumbo: '#2E9E44', vea: '#D7182A', disco: '#C8102E', naldo: '#E30613', cetrogar: '#0047BB', fravega: '#2D2E83', samsung: '#1428A0', motorola: '#001428', rodo: '#D52B1E', ipoint: '#1D1D1F', macstation: '#0071E3' };
   const OTRA_APP = { url: 'https://compras-super-cart.vercel.app', nombre: 'Super Cart', lugar: 'el súper', titulo: 'Más barato en el súper' };
   const paraCruce = it => true;
   // Cruce con la otra app: productos de esta lista que hoy salen más baratos en las tiendas de la otra
@@ -3786,6 +3785,11 @@
   }
   $('bUpdBtn').addEventListener('click', updateListPrices);
 
+  // "Mejores precios": para cada producto de la lista, el precio más bajo que tuvo, en qué tienda y cuándo (historial.js)
+  document.getElementById('bMejores').addEventListener('click', () => {
+    const l = ensureList();
+    if (window.tcHistorial) tcHistorial.mejores(l.items, l.name);
+  });
   function renderBuilder(){
     const l = ensureList();
     const sel = $('bList'); sel.innerHTML = '';
@@ -3976,7 +3980,7 @@
   }
   async function nameForEan(ean){
     if (catalog[ean]) return catalog[ean].name;
-    for (const url of ['/api/vtex?tienda=naldo&ean=' + ean, '/api/vtex?tienda=cetrogar&ean=' + ean, '/api/vtex?tienda=oncity&ean=' + ean, '/api/vtex?tienda=samsung&ean=' + ean]) {
+    for (const url of ['/api/vtex?tienda=naldo&ean=' + ean, '/api/vtex?tienda=cetrogar&ean=' + ean, '/api/vtex?tienda=samsung&ean=' + ean]) {
       try { const r = await fetch(url); if (!r.ok) continue; const d = await r.json(); const p = (d.productos || []).find(x => x.exacto); if (p) return p.nombre; } catch(_) {}
     }
     return null;
@@ -4068,7 +4072,7 @@
   }
   const ofActual = () => ofRubros.find(x => x.id === ofRubro);
   // Tienda de las ofertas: Coto (todas sus ofertas) o Carrefour / Día (catálogo online ordenado por descuento)
-  const TIENDAS_OF = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola' };
+  const TIENDAS_OF = { naldo: 'Naldo', cetrogar: 'Cetrogar', samsung: 'Samsung', motorola: 'Motorola' };
   let ofTienda = TIENDAS_OF[store.get('sale-tienda', 'farmaonline')] ? store.get('sale-tienda', 'farmaonline') : 'farmaonline';
   const ofNom = () => TIENDAS_OF[ofTienda];
   const ofUrlRubros = () => ofTienda === 'coto' ? '/api/coto-ofertas?rubros=1&sucursal=' + SUC_OF() : '/api/vtex-ofertas?tienda=' + ofTienda + '&rubros=1';
@@ -4292,7 +4296,7 @@
 
   // ---------- cuenta de Google (Supabase) ----------
   let sb = null, user = null, perfil = null, sessionUid = null, esAdmin = false, tieneSupers = true;
-  const SUPERS_MAIL = ['naldo', 'cetrogar', 'oncity', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation', 'carrefour', 'changomas', 'jumbo'];
+  const SUPERS_MAIL = ['naldo', 'cetrogar', 'samsung', 'motorola', 'rodo', 'ipoint', 'macstation', 'carrefour', 'changomas', 'jumbo'];
   async function initSupabase(){
     try {
       const c = await (await fetch('/api/config')).json();
@@ -4661,7 +4665,7 @@
     const sup = supOk.length ? supOk : SUPERS_MAIL;
     $('supersBox').hidden = (p.modo || 'resumen') !== 'resumen';
     document.querySelectorAll('#supersSel input').forEach(c => { c.checked = sup.includes(c.value); c.disabled = c.checked && sup.length === 1; });
-    const nom = { naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation', carrefour: 'Carrefour', changomas: 'ChangoMás', jumbo: 'Jumbo' };
+    const nom = { naldo: 'Naldo', cetrogar: 'Cetrogar', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation', carrefour: 'Carrefour', changomas: 'ChangoMás', jumbo: 'Jumbo' };
     $('supersTxt').textContent = sup.length > 1 ? `Te llega un solo mail comparando ${sup.map(s => nom[s]).join(', ').replace(/, ([^,]*)$/, ' y $1')}: el total de tu lista en cada uno y el precio de cada producto, con el más barato marcado.` : `Te llegan los precios de ${nom[sup[0]]}, con las ofertas arriba.`;
     // Listas que van al mail ("Recibir en el mail" por lista; se guarda en la columna en_mail)
     const enM = lists.filter(l => l.enMail !== false);

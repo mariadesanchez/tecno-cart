@@ -1,4 +1,4 @@
-// Tecno Cart · ofertas por rubro, con mayor descuento primero: Naldo, Cetrogar, On City, Samsung y Motorola (VTEX).
+// Tecno Cart · ofertas por rubro, con mayor descuento primero: Naldo, Cetrogar, Samsung y Motorola (VTEX).
 // Rodó (Magento) todavía no tiene listado de ofertas.
 // Usa el buscador público de cada tienda online. No son APIs oficiales.
 //   /api/vtex-ofertas?tienda=farmacity&rubros=1          -> rubros con su cantidad de ofertas

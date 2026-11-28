@@ -10,7 +10,7 @@
     coto: 'Coto', carrefour: 'Carrefour', dia: 'Día', changomas: 'ChangoMás', jumbo: 'Jumbo', vea: 'Vea', disco: 'Disco',
     farmacity: 'Farmacity', farmaonline: 'Farmaonline', simplicity: 'Simplicity', pigmento: 'Pigmento', gpsfarma: 'GPS Farma',
     juleriaque: 'Juleriaque', rouge: 'Rouge', andromaco: 'Andrómaco', bago: 'Nutricia Bagó',
-    naldo: 'Naldo', cetrogar: 'Cetrogar', oncity: 'On City', fravega: 'Frávega', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation',
+    naldo: 'Naldo', cetrogar: 'Cetrogar', fravega: 'Frávega', samsung: 'Samsung', motorola: 'Motorola', rodo: 'Rodó', ipoint: 'iPoint', macstation: 'MacStation',
     cebra: 'Cebra', kinderland: 'Kinderland', brickstore: 'Brickstore', sporting: 'Sporting', grid: 'Grid', dexter: 'Dexter', moov: 'Moov', stockcenter: 'Stock Center',
   };
   const PALETA = ['#E2367F', '#1E9BFF', '#16A34A', '#F59E0B', '#7C3AED', '#0D9488', '#DC2626', '#64748B', '#DB2777', '#2563EB'];
@@ -66,6 +66,26 @@
   .tch-exp p{margin:0 0 8px}.tch-exp p:last-child{margin:0}
   .tch-exp p.rec{font-weight:700;color:var(--ink,#1b2140);border-top:1px dashed var(--line,#ddd);padding-top:8px}
   .tch-exp p.hab{background:color-mix(in srgb,#E2367F 14%,transparent);border-radius:8px;padding:2px 6px;margin-left:-6px;margin-right:-6px}
+  .mejores-btn{appearance:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;margin:10px 0 2px;padding:8px 14px;border-radius:999px;
+    border:2px solid color-mix(in srgb,var(--sec2,#E2367F) 45%,transparent);background:color-mix(in srgb,var(--sec2,#E2367F) 10%,var(--card,#fff));
+    color:var(--ink,#1b2140);font:inherit;font-weight:800;font-size:14px}
+  .mejores-btn svg{width:18px;height:18px;fill:none;stroke:var(--sec2,#E2367F);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .tcm-res{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+  .tcm-res span{background:var(--bg,#f7f4fa);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700}
+  .tcm-sec{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#777);margin:16px 2px 8px}
+  .tcm-c{display:flex;gap:12px;background:var(--bg,#f7f4fa);border-radius:16px;padding:11px;margin-bottom:9px;cursor:pointer;border:2px solid transparent}
+  .tcm-c:hover{border-color:color-mix(in srgb,var(--sec2,#E2367F) 35%,transparent)}
+  .tcm-c .tch-ph{width:62px;height:62px}
+  .tcm-b{min-width:0;flex:1}
+  .tcm-n{font-weight:750;font-size:14.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .tcm-min{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;font-size:13.5px}
+  .tcm-v{background:#dcfce7;color:#15803d;font-weight:900;border-radius:10px;padding:3px 9px;font-size:15.5px;white-space:nowrap}
+  [data-theme=dark] .tcm-v{background:#14351f;color:#4ade80}
+  .tcm-h{font-size:13px;color:var(--muted,#777);margin-top:5px}
+  .tcm-h b{color:var(--ink,#1b2140)}
+  .tcm-ok{color:#15803d;font-weight:800}.tcm-up{color:#be185d;font-weight:800}
+  .tcm-tip{font-size:13px;margin-top:5px;font-weight:600}
+  .tch-back{appearance:none;border:0;background:none;color:var(--sec2,#E2367F);font:inherit;font-weight:800;font-size:13.5px;cursor:pointer;padding:0 0 10px}
   .tch-tip{position:absolute;pointer-events:none;background:var(--ink,#222);color:var(--card,#fff);font-size:12px;border-radius:8px;padding:5px 8px;white-space:nowrap;transform:translate(-50%,-110%)}
   `;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
@@ -88,7 +108,7 @@
   function cerrar(){ callar(); if (abierto) { abierto.remove(); abierto = null; document.removeEventListener('keydown', esc); } }
   function esc(e){ if (e.key === 'Escape') cerrar(); }
 
-  async function abrir(ean, nombre, img){
+  async function abrir(ean, nombre, img, volver){
     cerrar();
     const ov = el('div', 'tch-ov'), m = el('div', 'tch-m'); m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
     const x = el('button', 'tch-x', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar'); x.addEventListener('click', cerrar);
@@ -97,7 +117,9 @@
     const t = el('div', 'tch-t', nombre || 'Producto'), s = el('div', 'tch-s', 'Historial de precios · código ' + ean);
     tx.append(t, s); hd.append(ph, tx);
     const cuerpo = el('div'); cuerpo.appendChild(el('div', 'tch-msg', 'Buscando el historial…'));
-    m.append(x, hd, cuerpo); ov.appendChild(m);
+    if (volver) { const bk = el('button', 'tch-back', '← Volver a Mejores precios'); bk.type = 'button'; bk.addEventListener('click', volver); m.append(x, bk, hd, cuerpo); }
+    else m.append(x, hd, cuerpo);
+    ov.appendChild(m);
     ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
     document.addEventListener('keydown', esc);
     document.body.appendChild(ov); abierto = ov; x.focus();
@@ -209,6 +231,121 @@
     tab.appendChild(tb); cuerpo.appendChild(tab);
     const desdeTxt = ddmm(ini);
     cuerpo.appendChild(el('div', 'tch-n', `Precios online guardados todos los días desde el ${desdeTxt}. Los puntos marcan los días con oferta. Precio con la oferta aplicada (en promos de “llevando N”, el precio por unidad llevando N).`));
+  }
+
+  // ---------- Mejores precios de una lista: para cada producto, el precio más bajo que tuvo, en qué tienda y cuándo ----------
+  let ultMejores = null;
+  async function leerHistorial(sb, eans, desde){
+    const filas = [];
+    for (let i = 0; i < eans.length; i += 25) {
+      const lote = eans.slice(i, i + 25);
+      for (let off = 0; off < 20000; off += 1000) {
+        const { data, error } = await sb.from('historial_precios').select('ean,super,fecha,hasta,precio,precio_promo,promo,nombre')
+          .in('ean', lote).gte('hasta', desde).order('fecha', { ascending: true }).range(off, off + 999);
+        if (error) throw error;
+        filas.push(...(data || []));
+        if (!data || data.length < 1000) break;
+      }
+    }
+    return filas;
+  }
+  function analizar(rs){
+    const v = r => (r.precio_promo && r.precio_promo < r.precio - 0.5 ? r.precio_promo : r.precio);
+    rs = rs.filter(r => v(r) > 0);
+    if (!rs.length) return null;
+    const min = Math.min(...rs.map(v)), fin = rs.reduce((a, r) => (r.hasta > a ? r.hasta : a), '');
+    // Ventanas en las que estuvo a su precio más bajo (o casi: hasta 1% arriba), por tienda, juntando días seguidos
+    const vent = [];
+    rs.filter(r => v(r) <= min * 1.01 + 0.5).sort((a, b) => (a.super > b.super ? 1 : a.super < b.super ? -1 : a.fecha < b.fecha ? -1 : 1)).forEach(r => {
+      const u = vent[vent.length - 1];
+      if (u && u.k === r.super && dia(r.fecha) <= dia(u.b) + 1) { if (r.hasta > u.b) u.b = r.hasta; u.p = Math.min(u.p, v(r)); }
+      else vent.push({ k: r.super, a: r.fecha, b: r.hasta, p: v(r) });
+    });
+    vent.sort((a, b) => a.p - b.p || (a.a < b.a ? -1 : 1));
+    const hoyRs = rs.filter(r => r.hasta === fin).sort((a, b) => v(a) - v(b));
+    const hoy = hoyRs[0] ? { k: hoyRs[0].super, p: v(hoyRs[0]), of: hoyRs[0].precio_promo && hoyRs[0].precio_promo < hoyRs[0].precio - 0.5 } : null;
+    // Tienda que más días lo tuvo más barato
+    const tiendas = [...new Set(rs.map(r => r.super))], dias = {};
+    const d0 = dia(rs.reduce((a, r) => (r.fecha < a ? r.fecha : a), rs[0].fecha)), d1 = dia(fin);
+    let tot = 0;
+    for (let d = d0; d <= d1; d++) {
+      let m = null;
+      tiendas.forEach(k => { const r = rs.find(x => x.super === k && dia(x.fecha) <= d && d <= dia(x.hasta)); if (r && (!m || v(r) < m.p - 0.5)) m = { k, p: v(r) }; });
+      if (m) { dias[m.k] = (dias[m.k] || 0) + 1; tot++; }
+    }
+    const lider = Object.entries(dias).sort((a, b) => b[1] - a[1])[0];
+    return { min, vent, hoy, fin, actual: fin >= isoDe(dia(hoyIso()) - 1), lider: lider && tiendas.length > 1 ? { k: lider[0], d: lider[1], tot } : null, nT: tiendas.length };
+  }
+  const rangoCorto = (a, b) => a === b ? 'el ' + ddmm(a) : 'del ' + ddmm(a) + ' al ' + ddmm(b);
+
+  async function mejores(items, titulo){
+    cerrar();
+    const prods = []; const vistos = new Set();
+    (items || []).forEach(it => { const e = String(it.ean || '').replace(/\D/g, ''); if (/^\d{6,14}$/.test(e) && !vistos.has(e)) { vistos.add(e); prods.push({ ean: e, name: it.name || it.nombre || 'Producto', img: it.img || it.imagen || '' }); } });
+    const ov = el('div', 'tch-ov'), m = el('div', 'tch-m'); m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+    const x = el('button', 'tch-x', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar'); x.addEventListener('click', cerrar);
+    const hd = el('div'); hd.append(el('div', 'tch-t', 'Mejores precios'), el('div', 'tch-s', (titulo ? titulo + ' · ' : '') + prods.length + (prods.length === 1 ? ' producto' : ' productos') + ' · últimos ' + DIAS + ' días'));
+    hd.style.paddingRight = '40px';
+    const cuerpo = el('div'); cuerpo.appendChild(el('div', 'tch-msg', 'Analizando el historial de cada producto…'));
+    m.append(x, hd, cuerpo); ov.appendChild(m);
+    ov.addEventListener('click', e => { if (e.target === ov) cerrar(); });
+    document.addEventListener('keydown', esc);
+    document.body.appendChild(ov); abierto = ov;
+    const volver = () => mejores(items, titulo);
+    if (!prods.length) { cuerpo.innerHTML = ''; cuerpo.appendChild(el('div', 'tch-msg', 'Esta lista no tiene productos con código de barras.')); return; }
+    const sb = await sesion();
+    if (!sb) { cuerpo.innerHTML = ''; cuerpo.appendChild(el('div', 'tch-msg', 'Ingresá a tu cuenta para ver los mejores precios.')); return; }
+    const desde = new Date(Date.now() - DIAS * 864e5).toISOString().slice(0, 10);
+    const clave = prods.map(p => p.ean).join(',');
+    let filas;
+    if (ultMejores && ultMejores.clave === clave && Date.now() - ultMejores.t < 5 * 60e3) filas = ultMejores.filas;
+    else {
+      try { filas = await leerHistorial(sb, prods.map(p => p.ean), desde); } catch (e) { if (abierto === ov) { cuerpo.innerHTML = ''; cuerpo.appendChild(el('div', 'tch-msg', 'No se pudo leer el historial. Probá de nuevo en un rato.')); } return; }
+      ultMejores = { clave, filas, t: Date.now() };
+    }
+    if (abierto !== ov) return;
+    const porE = new Map(); filas.forEach(r => { if (!porE.has(r.ean)) porE.set(r.ean, []); porE.get(r.ean).push(r); });
+    const an = prods.map(p => Object.assign({ p }, { a: analizar(porE.get(p.ean) || []) }));
+    const conH = an.filter(x => x.a), sinH = an.filter(x => !x.a);
+    const enMin = conH.filter(x => x.a.hoy && x.a.actual && x.a.hoy.p <= x.a.min * 1.02 + 0.5);
+    const esperar = conH.filter(x => enMin.indexOf(x) < 0).sort((a, b) => ((b.a.hoy ? b.a.hoy.p / b.a.min : 9) - (a.a.hoy ? a.a.hoy.p / a.a.min : 9)));
+    cuerpo.innerHTML = '';
+    const res = el('div', 'tcm-res');
+    if (enMin.length) res.appendChild(el('span', '', '✅ ' + enMin.length + ' en su mejor precio hoy'));
+    if (esperar.length) res.appendChild(el('span', '', '⏳ ' + esperar.length + ' estuvieron más baratos antes'));
+    if (sinH.length) res.appendChild(el('span', '', '🕓 ' + sinH.length + ' sin historial todavía'));
+    cuerpo.appendChild(res);
+    const tarjeta = ({ p, a }) => {
+      const c = el('div', 'tcm-c'); c.setAttribute('role', 'button'); c.tabIndex = 0;
+      const ph = el('div', 'tch-ph'); if (p.img) { const i = el('img'); i.src = p.img; i.alt = ''; i.loading = 'lazy'; i.onerror = () => { ph.textContent = '🛒'; }; ph.appendChild(i); } else ph.textContent = '🛒';
+      const b = el('div', 'tcm-b'); b.appendChild(el('div', 'tcm-n', p.name));
+      if (a) {
+        const mn = el('div', 'tcm-min'); mn.appendChild(el('span', 'tcm-v', '✓ ' + fmt(a.min)));
+        const donde = a.vent.slice(0, 3).map(w => nom(w.k) + ' ' + rangoCorto(w.a, w.b));
+        mn.appendChild(el('span', '', 'en ' + donde.join(' · ') + (a.vent.length > 3 ? ' y más' : '')));
+        b.appendChild(mn);
+        const h = el('div', 'tcm-h');
+        if (a.hoy && a.actual) {
+          h.append('Hoy: ', el('b', '', fmt(a.hoy.p)), ' en ' + nom(a.hoy.k) + ' · ');
+          const dif = a.hoy.p / a.min - 1;
+          h.appendChild(dif <= 0.02 ? el('span', 'tcm-ok', 'es su mejor precio') : el('span', 'tcm-up', '+' + Math.round(dif * 100) + '% sobre el mínimo'));
+        } else h.textContent = 'Lo vimos por última vez el ' + ddmm(a.fin) + '.';
+        b.appendChild(h);
+        let tip;
+        if (a.hoy && a.actual && a.hoy.p <= a.min * 1.02 + 0.5) tip = '👉 Conviene comprarlo hoy en ' + nom(a.hoy.k) + '.';
+        else if (a.lider && a.lider.d / a.lider.tot >= 0.6) tip = '👉 Suele estar más barato en ' + nom(a.lider.k) + ' (' + a.lider.d + ' de ' + a.lider.tot + ' días). Esperá una oferta ahí.';
+        else tip = '👉 Si podés esperar, apuntá a ' + fmt(a.min) + ': ya estuvo a ese precio.';
+        b.appendChild(el('div', 'tcm-tip', tip));
+      } else b.appendChild(el('div', 'tcm-h', 'Todavía no tenemos precios guardados de este producto. Se empiezan a guardar todos los días desde que está en la lista.'));
+      c.append(ph, b);
+      const ir = () => abrir(p.ean, p.name, p.img, volver);
+      c.addEventListener('click', ir); c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ir(); } });
+      return c;
+    };
+    if (enMin.length) { cuerpo.appendChild(el('div', 'tcm-sec', 'Conviene comprar hoy')); enMin.forEach(x => cuerpo.appendChild(tarjeta(x))); }
+    if (esperar.length) { cuerpo.appendChild(el('div', 'tcm-sec', 'Estuvieron más baratos antes')); esperar.forEach(x => cuerpo.appendChild(tarjeta(x))); }
+    if (sinH.length) { cuerpo.appendChild(el('div', 'tcm-sec', 'Sin historial todavía')); sinH.forEach(x => cuerpo.appendChild(tarjeta(x))); }
+    cuerpo.appendChild(el('div', 'tch-n', 'Precio más bajo de los últimos ' + DIAS + ' días entre todas las tiendas donde vimos el producto, con la oferta aplicada. Tocá un producto para ver su gráfico.'));
   }
 
   // ---------- Explicación en palabras (y en voz alta) de lo que pasó con el precio ----------
@@ -326,5 +463,5 @@
     if (await sesion()) { clearInterval(pendiente); sessionStorage.removeItem('tc-hist'); abrir(p.ean, p.n || 'Producto'); }
   }, 1000);
 
-  window.tcHistorial = { boton, abrir, cerrar };
+  window.tcHistorial = { boton, abrir, cerrar, mejores };
 })();

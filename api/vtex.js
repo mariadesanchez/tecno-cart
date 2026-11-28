@@ -1,12 +1,11 @@
 // Tecno Cart · busca productos de tecnología y electro en tiendas online (por código de barras, por nombre o por modelo):
-// Naldo, Cetrogar, On City, Samsung y Motorola (plataforma VTEX) y Rodó (Magento, ver lib/magento.js).
+// Naldo, Cetrogar, Samsung y Motorola (plataforma VTEX) y Rodó (Magento, ver lib/magento.js).
 // Usa el buscador público de cada tienda. No son APIs oficiales. Todas devuelven el mismo formato.
 // Uso: /api/vtex?tienda=naldo&ean=7798186921234   o   /api/vtex?tienda=rodo&q=heladera drean
 
 const TIENDAS = {
   naldo:    { nombre: 'Naldo',    host: 'https://www.naldo.com.ar' },
   cetrogar: { nombre: 'Cetrogar', host: 'https://www.cetrogar.com.ar' },
-  oncity:   { nombre: 'On City',  host: 'https://www.oncity.com' },
   samsung:  { nombre: 'Samsung',  host: 'https://shop.samsung.com/ar' },
   motorola: { nombre: 'Motorola', host: 'https://www.motorola.com.ar' },
   // Supermercados que también venden tecnología y electro (los mismos que en Super Cart)
