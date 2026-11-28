@@ -6,8 +6,7 @@
   const SECCIONES = [
     { id: 'inicio', nombre: 'Tus Carts', sub: 'Todas las apps', url: 'https://tus-carts.vercel.app', color: '#5B5BD6', ico: '🏠' },
     { id: 'super', nombre: 'Super Cart', sub: 'Coto, Carrefour, ChangoMás, Día', url: 'https://compras-super-cart.vercel.app', color: '#22A55B', ico: '🛒' },
-    { id: 'perfu', nombre: 'Perfu Cart', sub: 'Perfumería y farmacia', url: 'https://perfu-cart.vercel.app', color: '#E2367F', ico: '💄' },
-    { id: 'belleza', nombre: 'Belleza Cart', sub: 'Cuidado y belleza · Andrómaco', url: 'https://perfu-cart.vercel.app/belleza', color: '#B43FC0', ico: '' },
+    { id: 'belleza', nombre: 'Belleza & Perfu', sub: 'Perfumería y belleza', url: 'https://perfu-cart.vercel.app', color: '#B43FC0', ico: '' },
     { id: 'tecno', nombre: 'Tecno Cart', sub: 'Tecnología y electro', url: 'https://tecno-cart.vercel.app', color: '#7B5CFF', ico: '📺' },
     { id: 'apple', nombre: 'Mundo Apple', sub: 'iPhone, iPad, Mac, AirPods', url: 'https://tecno-cart.vercel.app/apple', color: '#F0603F', ico: '' },
     { id: 'juguetes', nombre: 'Juguetes Cart', sub: 'Cebra, Kinderland y LEGO', url: JYD + '/juguetes', color: '#F28C00', ico: '🧸' },
@@ -20,7 +19,7 @@
     const h = location.hostname, p = location.pathname, qs = new URLSearchParams(location.search);
     const forzado = document.currentScript && document.currentScript.dataset.app;
     if (forzado) return forzado;
-    if (/perfu-cart/.test(h)) return /^\/belleza\/?$/.test(p) ? 'belleza' : 'perfu';
+    if (/perfu-cart/.test(h)) return 'belleza';
     if (/tecno-cart/.test(h)) return (/^\/apple\/?$/.test(p) || qs.get('apple') === '1') ? 'apple' : 'tecno';
     if (/juguetes-cart/.test(h)) return (/^\/indumentaria\/?$/.test(p) || qs.get('seccion') === 'deporte') ? 'indumentaria' : 'juguetes';
     if (/tus-carts/.test(h)) return 'inicio';
