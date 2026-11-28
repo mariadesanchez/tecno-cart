@@ -57,11 +57,11 @@
   .tch-tab .of{color:#be185d;font-size:11.5px;font-weight:700}
   .tch-n{color:var(--muted,#777);font-size:12.5px;margin-top:10px;line-height:1.4}
   .tch-msg{padding:26px 10px;text-align:center;color:var(--muted,#777)}
-  .tch-voz{appearance:none;border:0;cursor:pointer;flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
-    background:linear-gradient(180deg,#F25C9B,#E2367F);color:#fff;box-shadow:0 3px 0 #b3165d;padding:0;margin-left:auto;align-self:center}
+  .tch-voz{appearance:none;border:0;cursor:pointer;flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(180deg,#F25C9B,#E2367F);color:#fff;box-shadow:0 3px 0 #b3165d;padding:0;margin-top:8px}
   .tch-voz:active{transform:translateY(2px);box-shadow:0 1px 0 #b3165d}
   .tch-voz.on{background:linear-gradient(180deg,#6b6878,#4b4858);box-shadow:0 3px 0 #33313d}
-  .tch-voz svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .tch-voz svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   .tch-exp{background:var(--bg,#f7f4fa);border-radius:14px;padding:12px 14px;margin-top:8px;font-size:14.5px;line-height:1.55}
   .tch-exp p{margin:0 0 8px}.tch-exp p:last-child{margin:0}
   .tch-exp p.rec{font-weight:700;color:var(--ink,#1b2140);border-top:1px dashed var(--line,#ddd);padding-top:8px}
@@ -151,7 +151,7 @@
         const ok = decir(partes, exp, () => pintarB(false));
         pintarB(ok);
       });
-      const hd0 = abierto && abierto.querySelector('.tch-hd'); if (hd0) hd0.appendChild(vb); else cuerpo.appendChild(vb);
+      const hd0 = abierto && abierto.querySelector('.tch-hd > div:last-child'); if (hd0) hd0.appendChild(vb); else cuerpo.appendChild(vb);
       cuerpo.appendChild(exp);
     }
 
