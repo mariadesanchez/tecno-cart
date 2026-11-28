@@ -174,7 +174,8 @@
       if (u.r.hasta !== fin) td1.appendChild(el('div', 'tch-s', 'visto hasta el ' + ddmm(u.r.hasta)));
       const td2 = el('td', '', fmt(v(u.r)));
       if (u.r.precio_promo && u.r.precio_promo < u.r.precio - 0.5) { td2.appendChild(document.createElement('br')); td2.appendChild(el('span', 'of', String(u.r.promo || 'oferta').split(' · ')[0])); }
-      tr.append(td1, td2, el('td', '', fmt(v(mn)) + ' (' + ddmm(mn.fecha) + ')'), el('td', '', String(rs.filter(r => r.precio_promo && r.precio_promo < r.precio - 0.5).length)));
+      const td3 = el('td', '', fmt(v(mn))); td3.appendChild(el('div', 'tch-s', ddmm(mn.fecha)));
+      tr.append(td1, td2, td3, el('td', '', String(rs.filter(r => r.precio_promo && r.precio_promo < r.precio - 0.5).length)));
       tb.appendChild(tr);
     });
     tab.appendChild(tb); cuerpo.appendChild(tab);
