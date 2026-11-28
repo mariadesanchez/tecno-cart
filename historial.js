@@ -6,6 +6,8 @@
 (function(){
   if (window.tcHistorial) return;
   const DIAS = 90;
+  // Tiendas con las que ya no trabajamos: su historial viejo no se muestra ni se usa en el análisis
+  const FUERA = new Set(['oncity']);
   const NOMBRES = {
     coto: 'Coto', carrefour: 'Carrefour', dia: 'Día', changomas: 'ChangoMás', jumbo: 'Jumbo', vea: 'Vea', disco: 'Disco',
     farmacity: 'Farmacity', farmaonline: 'Farmaonline', simplicity: 'Simplicity', pigmento: 'Pigmento', gpsfarma: 'GPS Farma',
@@ -132,7 +134,7 @@
     if (abierto !== ov) return;
     cuerpo.innerHTML = '';
     if (error) { cuerpo.appendChild(el('div', 'tch-msg', 'No se pudo leer el historial. Probá de nuevo en un rato.')); return; }
-    const filas = (data || []).filter(r => (r.precio_promo || r.precio) > 0);
+    const filas = (data || []).filter(r => (r.precio_promo || r.precio) > 0 && !FUERA.has(r.super));
     if (!filas.length) { cuerpo.appendChild(el('div', 'tch-msg', 'Todavía no hay historial de este producto. Se empieza a guardar todos los días desde que está en una lista.')); return; }
     if (!nombre || nombre === 'Producto') { const n = filas[filas.length - 1].nombre; if (n) t.textContent = n; }
     pintar(cuerpo, filas, desde);
@@ -243,7 +245,7 @@
         const { data, error } = await sb.from('historial_precios').select('ean,super,fecha,hasta,precio,precio_promo,promo,nombre')
           .in('ean', lote).gte('hasta', desde).order('fecha', { ascending: true }).range(off, off + 999);
         if (error) throw error;
-        filas.push(...(data || []));
+        filas.push(...(data || []).filter(r => !FUERA.has(r.super)));
         if (!data || data.length < 1000) break;
       }
     }
